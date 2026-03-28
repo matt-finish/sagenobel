@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createProduct, updateProduct } from "@/lib/actions/products";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 interface CustomField {
   id: string;
@@ -27,14 +29,45 @@ export function ProductEditorForm({ product }: { product?: Product }) {
   const [customFields, setCustomFields] = useState<CustomField[]>(
     product?.custom_fields || []
   );
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function addImage() {
-    if (newImageUrl.trim()) {
-      setImages([...images, newImageUrl.trim()]);
-      setNewImageUrl("");
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    for (const file of Array.from(files)) {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        setError(`Upload failed: ${uploadError.message}`);
+        setUploading(false);
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      setImages((prev) => [...prev, data.publicUrl]);
+    }
+
+    setUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   }
 
@@ -138,40 +171,55 @@ export function ProductEditorForm({ product }: { product?: Product }) {
         <label className="block text-sm font-medium text-foreground mb-2">
           Images
         </label>
-        <div className="space-y-2">
-          {images.map((url, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={url}
-                readOnly
-                className="flex-1 rounded-lg border border-border bg-background-alt px-3 py-2 text-sm text-foreground-muted"
-              />
-              <button
-                type="button"
-                onClick={() => setImages(images.filter((_, j) => j !== i))}
-                className="p-2 text-error/70 hover:text-error"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="Image URL..."
-              className="flex-1 rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-            />
-            <button
-              type="button"
-              onClick={addImage}
-              className="rounded-lg bg-sage/10 px-3 py-2 text-sage text-sm font-medium hover:bg-sage/20 transition-colors"
-            >
-              Add
-            </button>
+        {images.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+            {images.map((url, i) => (
+              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
+                <Image
+                  src={url}
+                  alt={`Product image ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImages(images.filter((_, j) => j !== i))}
+                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
           </div>
+        )}
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="hidden"
+            id="image-upload"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-foreground-muted hover:border-sage hover:text-sage transition-colors disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload size={16} />
+                Upload Images
+              </>
+            )}
+          </button>
         </div>
       </div>
 

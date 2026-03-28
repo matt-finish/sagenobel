@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { DeleteProductButton } from "@/components/products/delete-product-button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -63,12 +64,15 @@ export default async function ProductManagerPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/dashboard/product-manager/${product.id}`}
-                      className="text-xs text-sage hover:text-sage-dark font-medium"
-                    >
-                      Edit
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/dashboard/product-manager/${product.id}`}
+                        className="text-xs text-sage hover:text-sage-dark font-medium"
+                      >
+                        Edit
+                      </Link>
+                      <DeleteProductButton id={product.id} name={product.name} />
+                    </div>
                   </td>
                 </tr>
               ))}

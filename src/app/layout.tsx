@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display, Geist_Mono } from "next/font/google";
+import { DM_Sans, Bodoni_Moda, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import "./globals.css";
 
@@ -8,7 +8,7 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
+const bodoni = Bodoni_Moda({
   variable: "--font-playfair",
   subsets: ["latin"],
 });
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${playfair.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${bodoni.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <CartProvider>{children}</CartProvider>

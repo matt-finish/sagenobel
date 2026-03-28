@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   Settings,
   LogOut,
+  ExternalLink,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 
@@ -76,7 +77,15 @@ export function DashboardSidebar({ isAdmin }: { isAdmin: boolean }) {
           );
         })}
       </nav>
-      <div className="p-3 border-t border-border">
+      <div className="p-3 border-t border-border space-y-1">
+        <Link
+          href="/"
+          target="_blank"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-muted hover:bg-sage/5 hover:text-sage transition-colors w-full"
+        >
+          <ExternalLink size={18} />
+          View Site
+        </Link>
         <form action={signOut}>
           <button
             type="submit"

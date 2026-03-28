@@ -8,6 +8,7 @@ import {
   FileText,
   Package,
   BookOpen,
+  Layers,
   Image as ImageIcon,
   Settings,
   LogOut,
@@ -29,6 +30,7 @@ const adminLinks = [
     icon: Package,
   },
   { href: "/dashboard/guide-manager", label: "Guide Manager", icon: BookOpen },
+  { href: "/dashboard/project-manager", label: "Project Manager", icon: Layers },
   { href: "/dashboard/media", label: "Media Library", icon: ImageIcon },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

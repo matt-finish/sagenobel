@@ -7,6 +7,7 @@ import { useCart } from "@/components/cart/cart-provider";
 
 const navLinks = [
   { href: "/blog", label: "Blog" },
+  { href: "/projects", label: "Projects" },
   { href: "/products", label: "Products" },
   { href: "/guides", label: "Free Guides" },
 ];

@@ -2,17 +2,8 @@
 -- Sage Nobel - Database Schema
 -- ============================================
 
--- Helper function: check if current user is admin
-create or replace function public.is_admin()
-returns boolean as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and is_admin = true
-  );
-$$ language sql security definer;
-
 -- ============================================
--- PROFILES
+-- PROFILES (created first so is_admin() can reference it)
 -- ============================================
 create table public.profiles (
   id uuid references auth.users on delete cascade primary key,
@@ -25,6 +16,16 @@ create table public.profiles (
 );
 
 alter table public.profiles enable row level security;
+
+-- Helper function: check if current user is admin
+-- (defined after profiles table exists)
+create or replace function public.is_admin()
+returns boolean as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and is_admin = true
+  );
+$$ language sql security definer;
 
 create policy "Users can view own profile"
   on public.profiles for select

@@ -1,6 +1,13 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+
+function getResend() {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 export async function sendOrderConfirmation(
   email: string,
@@ -15,7 +22,7 @@ export async function sendOrderConfirmation(
     )
     .join("\n");
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: process.env.RESEND_FROM_EMAIL || "noreply@example.com",
     to: email,
     subject: `Order Confirmed - ${orderNumber}`,
@@ -30,7 +37,7 @@ export async function sendShippingNotification(
   trackingUrl: string,
   carrier: string
 ) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: process.env.RESEND_FROM_EMAIL || "noreply@example.com",
     to: email,
     subject: `Your Order Has Shipped - ${orderNumber}`,

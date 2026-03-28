@@ -35,35 +35,76 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-background-alt via-background to-sage/5" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-40">
-          <div className="max-w-3xl">
-            <div className="decorative-line mb-8 animate-fade-in" />
-            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight text-foreground leading-[1.1] animate-fade-in-up">
-              Curating
-              <br />
-              <span className="italic text-sage">Experiences</span>
-              <br />
-              & Environments
-            </h1>
-            <p className="mt-8 text-lg md:text-xl text-foreground-muted leading-relaxed max-w-xl animate-fade-in-up delay-200">
-              Travel, hosting, home decor, and inspiration for intentional
-              living. Discover tips, guides, and curated products to elevate
-              your everyday.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 animate-fade-in-up delay-300">
-              <Link
-                href="/blog"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-sage px-8 py-3.5 text-white font-medium hover:bg-sage-dark transition-all duration-300 hover:shadow-lg hover:shadow-sage/20"
-              >
-                Explore the Blog
-                <ArrowRight size={18} />
-              </Link>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 px-8 py-3.5 text-foreground font-medium hover:border-sage hover:text-sage transition-all duration-300"
-              >
-                Shop Products
-              </Link>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+            {/* Left — Text */}
+            <div>
+              <div className="decorative-line mb-6 animate-fade-in" />
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-foreground leading-[1.1] animate-fade-in-up">
+                Curating
+                {" "}
+                <span className="italic text-sage">Experiences</span>
+                {" "}
+                & Environments
+              </h1>
+              <p className="mt-5 text-base md:text-lg text-foreground-muted leading-relaxed animate-fade-in-up delay-200">
+                Travel, hosting, home decor, and inspiration for intentional
+                living. Discover tips, guides, and curated products to elevate
+                your everyday.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 animate-fade-in-up delay-300">
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-sage px-7 py-3 text-white text-sm font-medium hover:bg-sage-dark transition-all duration-300 hover:shadow-lg hover:shadow-sage/20"
+                >
+                  Explore the Blog
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/products"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 px-7 py-3 text-foreground text-sm font-medium hover:border-sage hover:text-sage transition-all duration-300"
+                >
+                  Shop Products
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — Image grid */}
+            <div className="grid grid-cols-2 gap-3 animate-fade-in delay-200">
+              <div className="space-y-3">
+                <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
+                  {recentProducts?.[0]?.images?.[0] ? (
+                    <Image src={(recentProducts[0].images as string[])[0]} alt="" fill className="object-cover !relative" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
+                    </div>
+                  )}
+                </div>
+                <div className="aspect-square rounded-xl bg-sage/10 border border-sage/10 flex items-center justify-center">
+                  <p className="font-serif text-sage/40 text-sm italic text-center px-4">curated with intention</p>
+                </div>
+              </div>
+              <div className="space-y-3 pt-6">
+                <div className="aspect-square rounded-xl bg-background-alt border border-border/50 overflow-hidden">
+                  {featuredPost?.cover_image_url ? (
+                    <Image src={featuredPost.cover_image_url} alt="" fill className="object-cover !relative" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
+                    </div>
+                  )}
+                </div>
+                <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
+                  {recentProducts?.[1]?.images?.[0] ? (
+                    <Image src={(recentProducts[1].images as string[])[0]} alt="" fill className="object-cover !relative" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

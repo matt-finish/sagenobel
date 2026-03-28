@@ -47,9 +47,10 @@ export default async function ProductPage(
   const customFields = product.custom_fields as {
     id: string;
     label: string;
-    type: "dropdown" | "text";
+    type: "dropdown" | "text" | "pricing_dropdown";
     required: boolean;
     options: string[];
+    pricing_options?: { label: string; price_cents: number }[];
   }[];
 
   return (
@@ -103,12 +104,27 @@ export default async function ProductPage(
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-semibold text-foreground">
+          <h1 className="font-serif text-3xl font-medium text-foreground">
             {product.name}
           </h1>
-          <p className="text-2xl text-sage font-medium mt-2">
-            {formatPrice(product.price_cents)}
-          </p>
+          {customFields.some((f) => f.type === "pricing_dropdown") ? (
+            <p className="text-xl text-foreground-muted mt-2">
+              From{" "}
+              <span className="text-sage font-medium">
+                {formatPrice(
+                  Math.min(
+                    ...customFields
+                      .filter((f) => f.type === "pricing_dropdown")
+                      .flatMap((f) => (f.pricing_options || []).map((o) => o.price_cents))
+                  )
+                )}
+              </span>
+            </p>
+          ) : (
+            <p className="text-2xl text-sage font-medium mt-2">
+              {formatPrice(product.price_cents)}
+            </p>
+          )}
           {product.description && (
             <p className="text-foreground-muted mt-4 leading-relaxed">
               {product.description}

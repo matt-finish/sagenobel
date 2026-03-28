@@ -3,13 +3,20 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { ShoppingBag, Check } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
+
+interface PricingOption {
+  label: string;
+  price_cents: number;
+}
 
 interface CustomField {
   id: string;
   label: string;
-  type: "dropdown" | "text";
+  type: "dropdown" | "text" | "pricing_dropdown";
   required: boolean;
   options: string[];
+  pricing_options?: PricingOption[];
 }
 
 export function AddToCartButton({
@@ -30,8 +37,22 @@ export function AddToCartButton({
   const [added, setAdded] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Calculate current price based on pricing dropdown selections
+  function getCurrentPrice(): number {
+    for (const field of customFields) {
+      if (field.type === "pricing_dropdown" && fieldValues[field.label]) {
+        const selected = field.pricing_options?.find(
+          (opt) => opt.label === fieldValues[field.label]
+        );
+        if (selected) return selected.price_cents;
+      }
+    }
+    return priceCents;
+  }
+
+  const currentPrice = getCurrentPrice();
+
   function handleAdd() {
-    // Validate required fields
     const newErrors: Record<string, string> = {};
     for (const field of customFields) {
       if (field.required && !fieldValues[field.label]) {
@@ -48,7 +69,7 @@ export function AddToCartButton({
     addItem({
       productId,
       productName,
-      priceCents,
+      priceCents: currentPrice,
       quantity: 1,
       image,
       customFieldValues: fieldValues,
@@ -66,7 +87,23 @@ export function AddToCartButton({
             {field.label}
             {field.required && <span className="text-error ml-0.5">*</span>}
           </label>
-          {field.type === "dropdown" ? (
+
+          {field.type === "pricing_dropdown" ? (
+            <select
+              value={fieldValues[field.label] || ""}
+              onChange={(e) =>
+                setFieldValues({ ...fieldValues, [field.label]: e.target.value })
+              }
+              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+            >
+              <option value="">Select {field.label}</option>
+              {(field.pricing_options || []).map((opt) => (
+                <option key={opt.label} value={opt.label}>
+                  {opt.label} — {formatPrice(opt.price_cents)}
+                </option>
+              ))}
+            </select>
+          ) : field.type === "dropdown" ? (
             <select
               value={fieldValues[field.label] || ""}
               onChange={(e) =>
@@ -98,6 +135,16 @@ export function AddToCartButton({
         </div>
       ))}
 
+      {/* Dynamic price display */}
+      {customFields.some((f) => f.type === "pricing_dropdown") && (
+        <div className="flex items-center justify-between py-3 border-t border-border">
+          <span className="text-sm text-foreground-muted">Price</span>
+          <span className="text-xl font-semibold text-sage">
+            {formatPrice(currentPrice)}
+          </span>
+        </div>
+      )}
+
       <button
         onClick={handleAdd}
         className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${
@@ -114,7 +161,7 @@ export function AddToCartButton({
         ) : (
           <>
             <ShoppingBag size={18} />
-            Add to Cart
+            Add to Cart — {formatPrice(currentPrice)}
           </>
         )}
       </button>

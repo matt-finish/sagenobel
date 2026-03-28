@@ -13,6 +13,20 @@ const checkoutSchema = z.object({
   ),
 });
 
+interface PricingOption {
+  label: string;
+  price_cents: number;
+}
+
+interface CustomField {
+  id: string;
+  label: string;
+  type: "dropdown" | "text" | "pricing_dropdown";
+  required: boolean;
+  options: string[];
+  pricing_options?: PricingOption[];
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -20,16 +34,15 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // Get current user if logged in
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // Re-fetch prices from database — never trust client
+    // Re-fetch products with custom_fields for pricing validation
     const productIds = items.map((item) => item.productId);
     const { data: products, error } = await supabase
       .from("products")
-      .select("id, name, price_cents, is_active")
+      .select("id, name, price_cents, custom_fields, is_active")
       .in("id", productIds);
 
     if (error || !products) {
@@ -39,7 +52,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate all products exist and are active
     const productMap = new Map(products.map((p) => [p.id, p]));
     for (const item of items) {
       const product = productMap.get(item.productId);
@@ -57,15 +69,45 @@ export async function POST(request: Request) {
       }
     }
 
+    // Resolve the correct price for each item (base price or pricing dropdown)
+    function resolvePrice(
+      product: { price_cents: number; custom_fields: unknown },
+      customFieldValues: Record<string, string>
+    ): number {
+      const fields = (product.custom_fields || []) as CustomField[];
+
+      for (const field of fields) {
+        if (field.type === "pricing_dropdown" && customFieldValues[field.label]) {
+          const selectedOption = (field.pricing_options || []).find(
+            (opt) => opt.label === customFieldValues[field.label]
+          );
+          if (selectedOption) {
+            return selectedOption.price_cents;
+          }
+        }
+      }
+
+      return product.price_cents;
+    }
+
     const lineItems = items.map((item) => {
       const product = productMap.get(item.productId)!;
+      const priceCents = resolvePrice(product, item.customFieldValues);
+
+      // Build description from custom field selections
+      const selections = Object.entries(item.customFieldValues)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(", ");
+
       return {
         price_data: {
           currency: "usd",
           product_data: {
             name: product.name,
+            ...(selections ? { description: selections } : {}),
           },
-          unit_amount: product.price_cents,
+          unit_amount: priceCents,
         },
         quantity: item.quantity,
       };
@@ -84,13 +126,17 @@ export async function POST(request: Request) {
       metadata: {
         user_id: user?.id || "",
         items: JSON.stringify(
-          items.map((item) => ({
-            productId: item.productId,
-            productName: productMap.get(item.productId)!.name,
-            priceCents: productMap.get(item.productId)!.price_cents,
-            quantity: item.quantity,
-            customFieldValues: item.customFieldValues,
-          }))
+          items.map((item) => {
+            const product = productMap.get(item.productId)!;
+            const priceCents = resolvePrice(product, item.customFieldValues);
+            return {
+              productId: item.productId,
+              productName: product.name,
+              priceCents,
+              quantity: item.quantity,
+              customFieldValues: item.customFieldValues,
+            };
+          })
         ),
       },
     });

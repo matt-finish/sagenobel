@@ -18,11 +18,17 @@ export default async function GuidesPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-2">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="decorative-line" />
+        <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground-muted">
+          Resources
+        </span>
+      </div>
+      <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-3">
         Free Guides
       </h1>
-      <p className="text-foreground-muted mb-8">
+      <p className="text-foreground-muted text-lg mb-12 max-w-2xl">
         Resources and guides to help you curate your ideal lifestyle.
       </p>
 

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
+import { formatPrice } from "@/lib/utils";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -21,33 +22,45 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(3);
 
+  const { data: recentPosts } = await supabase
+    .from("blog_posts")
+    .select("id, title, slug, excerpt, cover_image_url, created_at")
+    .eq("is_published", true)
+    .eq("is_featured", false)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-background-alt">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground leading-tight">
-              Curating Experiences
-              <span className="text-sage"> & </span>
-              Environments
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-background-alt via-background to-sage/5" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-40">
+          <div className="max-w-3xl">
+            <div className="decorative-line mb-8 animate-fade-in" />
+            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight text-foreground leading-[1.1] animate-fade-in-up">
+              Curating
+              <br />
+              <span className="italic text-sage">Experiences</span>
+              <br />
+              & Environments
             </h1>
-            <p className="mt-6 text-lg text-foreground-muted leading-relaxed">
+            <p className="mt-8 text-lg md:text-xl text-foreground-muted leading-relaxed max-w-xl animate-fade-in-up delay-200">
               Travel, hosting, home decor, and inspiration for intentional
               living. Discover tips, guides, and curated products to elevate
               your everyday.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 animate-fade-in-up delay-300">
               <Link
                 href="/blog"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-sage px-6 py-3 text-white font-medium hover:bg-sage-dark transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-sage px-8 py-3.5 text-white font-medium hover:bg-sage-dark transition-all duration-300 hover:shadow-lg hover:shadow-sage/20"
               >
                 Explore the Blog
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 text-foreground font-medium hover:bg-white transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 px-8 py-3.5 text-foreground font-medium hover:border-sage hover:text-sage transition-all duration-300"
               >
                 Shop Products
               </Link>
@@ -57,175 +70,224 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Blog Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
-            Featured Post
-          </h2>
-          <Link
-            href="/blog"
-            className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1 transition-colors"
-          >
-            View all posts
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-        {featuredPost ? (
+      {featuredPost && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="decorative-line" />
+            <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground-muted">
+              Featured
+            </span>
+          </div>
           <Link
             href={`/blog/${featuredPost.slug}`}
-            className="group block bg-background-alt rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
+            className="group block"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {featuredPost.cover_image_url ? (
-                <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">
-                  <Image
-                    src={featuredPost.cover_image_url}
-                    alt={featuredPost.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              ) : (
-                <div className="aspect-[16/10] md:aspect-auto bg-border/20 flex items-center justify-center">
-                  <span className="text-foreground-muted/20 text-6xl font-serif">
-                    SN
-                  </span>
-                </div>
-              )}
-              <div className="p-8 md:p-12 flex flex-col justify-center">
-                <p className="text-sm text-foreground-muted mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
+              <div className="md:col-span-7">
+                {featuredPost.cover_image_url ? (
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden image-hover">
+                    <Image
+                      src={featuredPost.cover_image_url}
+                      alt={featuredPost.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[4/3] rounded-2xl bg-background-alt flex items-center justify-center">
+                    <span className="font-serif text-foreground-muted/15 text-8xl italic">
+                      SN
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="md:col-span-5">
+                <p className="text-sm text-foreground-muted mb-4">
                   {new Date(featuredPost.created_at).toLocaleDateString(
                     "en-US",
                     { month: "long", day: "numeric", year: "numeric" }
                   )}
                 </p>
-                <h3 className="text-2xl md:text-3xl font-semibold text-foreground group-hover:text-sage transition-colors">
+                <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-tight">
                   {featuredPost.title}
-                </h3>
+                </h2>
                 {featuredPost.excerpt && (
-                  <p className="text-foreground-muted mt-3 leading-relaxed">
+                  <p className="text-foreground-muted mt-4 leading-relaxed text-lg">
                     {featuredPost.excerpt}
                   </p>
                 )}
-                <span className="inline-flex items-center gap-1 text-sage font-medium mt-4">
-                  Read more
-                  <ArrowRight size={16} />
+                <span className="inline-flex items-center gap-2 text-sage font-medium mt-6 link-underline">
+                  Read the full story
+                  <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
               </div>
             </div>
           </Link>
+        </section>
+      )}
+
+      {/* Recent Posts */}
+      {recentPosts && recentPosts.length > 0 && (
+        <section className="bg-background-alt/60">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center gap-4">
+                <div className="decorative-line" />
+                <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+                  Latest Posts
+                </h2>
+              </div>
+              <Link
+                href="/blog"
+                className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1.5 link-underline transition-colors"
+              >
+                View all
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {recentPosts.map((post, i) => (
+                <Link
+                  key={post.id}
+                  href={`/blog/${post.slug}`}
+                  className={`group animate-fade-in-up delay-${(i + 1) * 100}`}
+                >
+                  {post.cover_image_url ? (
+                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-5 image-hover">
+                      <Image
+                        src={post.cover_image_url}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/3] rounded-xl bg-background flex items-center justify-center mb-5 image-hover border border-border">
+                      <span className="font-serif text-foreground-muted/10 text-6xl italic">
+                        SN
+                      </span>
+                    </div>
+                  )}
+                  <p className="text-xs text-foreground-muted uppercase tracking-wider mb-2">
+                    {new Date(post.created_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <h3 className="font-serif text-xl font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-snug">
+                    {post.title}
+                  </h3>
+                  {post.excerpt && (
+                    <p className="text-sm text-foreground-muted mt-2 line-clamp-2 leading-relaxed">
+                      {post.excerpt}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Products Preview Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-4">
+            <div className="decorative-line" />
+            <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+              The Shop
+            </h2>
+          </div>
+          <Link
+            href="/products"
+            className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1.5 link-underline transition-colors"
+          >
+            View all
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+        {recentProducts && recentProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {recentProducts.map((product) => {
+              const images = product.images as string[];
+              return (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.slug}`}
+                  className="group"
+                >
+                  {images?.[0] ? (
+                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
+                      <Image
+                        src={images[0]}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
+                      <span className="font-serif text-foreground-muted/10 text-6xl italic">
+                        SN
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-foreground-muted mt-1">
+                    {formatPrice(product.price_cents)}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
         ) : (
-          <div className="bg-background-alt rounded-2xl p-8 md:p-12">
-            <p className="text-foreground-muted text-center py-12">
-              Featured blog post will appear here once published.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="text-center">
+                <div className="aspect-[3/4] bg-background-alt rounded-xl mb-4 border border-border/50" />
+                <p className="text-foreground-muted text-sm">Coming soon</p>
+              </div>
+            ))}
           </div>
         )}
       </section>
 
-      {/* Products Preview Section */}
-      <section className="bg-background-alt">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
-              Shop
+      {/* Guides Section */}
+      <section className="bg-sage/[0.04]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="max-w-2xl mx-auto text-center mb-12">
+            <div className="decorative-line mx-auto mb-6" />
+            <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+              Free Guides & Resources
             </h2>
+            <p className="text-foreground-muted mt-4 text-lg leading-relaxed">
+              Downloadable guides and articles to help you curate your ideal lifestyle.
+            </p>
+          </div>
+          <div className="flex justify-center">
             <Link
-              href="/products"
-              className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1 transition-colors"
+              href="/guides"
+              className="inline-flex items-center gap-2 rounded-full border border-sage/30 px-8 py-3.5 text-sage font-medium hover:bg-sage hover:text-white transition-all duration-300"
             >
-              View all products
+              Browse Free Guides
               <ArrowRight size={16} />
             </Link>
           </div>
-          {recentProducts && recentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentProducts.map((product) => {
-                const images = product.images as string[];
-                return (
-                  <Link
-                    key={product.id}
-                    href={`/products/${product.slug}`}
-                    className="group bg-background rounded-xl overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    {images?.[0] ? (
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    ) : (
-                      <div className="aspect-square bg-border/20 flex items-center justify-center">
-                        <span className="text-foreground-muted/20 text-4xl font-serif">
-                          SN
-                        </span>
-                      </div>
-                    )}
-                    <div className="p-4">
-                      <h3 className="font-medium text-foreground group-hover:text-sage transition-colors">
-                        {product.name}
-                      </h3>
-                      <p className="text-sm text-foreground-muted mt-1">
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        }).format(product.price_cents / 100)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-background rounded-xl p-6 text-center"
-                >
-                  <div className="aspect-square bg-border/30 rounded-lg mb-4" />
-                  <p className="text-foreground-muted text-sm">
-                    Products coming soon
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Guides Preview Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
-            Free Guides
-          </h2>
-          <Link
-            href="/guides"
-            className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1 transition-colors"
-          >
-            View all guides
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="bg-background-alt rounded-2xl p-8 md:p-12">
-          <p className="text-foreground-muted text-center py-8">
-            Free guides and resources will appear here.
-          </p>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="bg-sage/5 border-t border-sage/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-sage/10 via-background to-background" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center">
+          <div className="decorative-line mx-auto mb-6" />
+          <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
             Stay Inspired
           </h2>
-          <p className="text-foreground-muted mt-3 mb-8 max-w-md mx-auto">
-            Get curated tips, new guides, and product drops delivered to your
+          <p className="text-foreground-muted mt-4 mb-10 max-w-md mx-auto text-lg leading-relaxed">
+            Curated tips, new guides, and product drops delivered to your
             inbox. No spam, ever.
           </p>
           <NewsletterForm />

@@ -66,22 +66,23 @@ export default async function BlogPostPage(
         </div>
       )}
 
-      <header className="mb-8">
-        <p className="text-sm text-foreground-muted mb-3">
+      <header className="mb-10">
+        <p className="text-xs text-foreground-muted uppercase tracking-wider mb-4">
           {new Date(post.created_at).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
             year: "numeric",
           })}
         </p>
-        <h1 className="text-3xl md:text-4xl font-semibold text-foreground leading-tight">
+        <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground leading-[1.15]">
           {post.title}
         </h1>
         {post.excerpt && (
-          <p className="text-lg text-foreground-muted mt-4 leading-relaxed">
+          <p className="text-lg text-foreground-muted mt-5 leading-relaxed">
             {post.excerpt}
           </p>
         )}
+        <div className="decorative-line mt-8" />
       </header>
 
       <div className="border-t border-border pt-8">

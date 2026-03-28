@@ -33,8 +33,14 @@ export default async function BlogPage(props: {
   const { data: posts } = await dbQuery;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="decorative-line" />
+        <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground-muted">
+          Journal
+        </span>
+      </div>
+      <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-10">
         Blog
       </h1>
 
@@ -49,46 +55,44 @@ export default async function BlogPage(props: {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
           {posts.map((post) => (
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}
-              className="group bg-background rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow"
+              className="group"
             >
               {post.cover_image_url ? (
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-5 image-hover">
                   <Image
                     src={post.cover_image_url}
                     alt={post.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-cover"
                   />
                 </div>
               ) : (
-                <div className="aspect-[16/10] bg-background-alt flex items-center justify-center">
-                  <span className="text-foreground-muted/30 text-4xl font-serif">
+                <div className="aspect-[4/3] rounded-xl bg-background-alt flex items-center justify-center mb-5 image-hover border border-border">
+                  <span className="font-serif text-foreground-muted/10 text-6xl italic">
                     SN
                   </span>
                 </div>
               )}
-              <div className="p-5">
-                <p className="text-xs text-foreground-muted mb-2">
-                  {new Date(post.created_at).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+              <p className="text-xs text-foreground-muted uppercase tracking-wider mb-2">
+                {new Date(post.created_at).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
+              <h2 className="font-serif text-xl font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-snug line-clamp-2">
+                {post.title}
+              </h2>
+              {post.excerpt && (
+                <p className="text-sm text-foreground-muted mt-2 line-clamp-2 leading-relaxed">
+                  {post.excerpt}
                 </p>
-                <h2 className="text-lg font-semibold text-foreground group-hover:text-sage transition-colors line-clamp-2">
-                  {post.title}
-                </h2>
-                {post.excerpt && (
-                  <p className="text-sm text-foreground-muted mt-2 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                )}
-              </div>
+              )}
             </Link>
           ))}
         </div>

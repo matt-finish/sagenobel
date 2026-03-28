@@ -3,31 +3,36 @@ import { NewsletterForm } from "@/components/shared/newsletter-form";
 
 export function Footer() {
   return (
-    <footer className="bg-background-alt border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-3">
+    <footer className="bg-foreground text-white/80 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+          {/* Brand */}
+          <div className="md:col-span-4">
+            <h3 className="font-serif text-2xl font-medium text-white mb-4">
               Sage Nobel
             </h3>
-            <p className="text-sm text-foreground-muted leading-relaxed">
+            <p className="text-sm leading-relaxed text-white/50">
               Curating experiences and environments for intentional living.
+              Travel, hosting, home decor, and everyday inspiration.
             </p>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
+
+          {/* Nav Links */}
+          <div className="md:col-span-2">
+            <h4 className="text-xs font-medium text-white/40 uppercase tracking-[0.15em] mb-4">
               Explore
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {[
                 { href: "/blog", label: "Blog" },
-                { href: "/products", label: "Products" },
-                { href: "/guides", label: "Free Guides" },
+                { href: "/projects", label: "Projects" },
+                { href: "/products", label: "Shop" },
+                { href: "/guides", label: "Guides" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-foreground-muted hover:text-sage transition-colors"
+                    className="text-sm text-white/50 hover:text-white transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -35,11 +40,13 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
+
+          {/* Account Links */}
+          <div className="md:col-span-2">
+            <h4 className="text-xs font-medium text-white/40 uppercase tracking-[0.15em] mb-4">
               Account
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {[
                 { href: "/login", label: "Sign In" },
                 { href: "/signup", label: "Create Account" },
@@ -48,7 +55,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-foreground-muted hover:text-sage transition-colors"
+                    className="text-sm text-white/50 hover:text-white transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -56,19 +63,25 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
+
+          {/* Newsletter */}
+          <div className="md:col-span-4">
+            <h4 className="text-xs font-medium text-white/40 uppercase tracking-[0.15em] mb-4">
               Newsletter
             </h4>
-            <p className="text-sm text-foreground-muted mb-3">
+            <p className="text-sm text-white/50 mb-4">
               Tips, guides, and new drops in your inbox.
             </p>
             <NewsletterForm variant="compact" />
           </div>
         </div>
-        <div className="border-t border-border mt-8 pt-8 text-center">
-          <p className="text-sm text-foreground-muted">
+
+        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-white/30">
             &copy; {new Date().getFullYear()} Sage Nobel. All rights reserved.
+          </p>
+          <p className="text-xs text-white/30 italic">
+            Curated with intention
           </p>
         </div>
       </div>

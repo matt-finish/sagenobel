@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <div>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+        <h1 className="font-serif text-3xl font-medium text-foreground">
           Sage Nobel
         </h1>
         <p className="text-foreground-muted mt-2">

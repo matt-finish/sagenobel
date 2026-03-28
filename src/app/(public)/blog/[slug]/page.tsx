@@ -4,6 +4,7 @@ import { TiptapRenderer } from "@/components/blog/tiptap-renderer";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { NewsletterForm } from "@/components/shared/newsletter-form";
 import type { Metadata } from "next";
 import type { JSONContent } from "@tiptap/react";
 
@@ -85,6 +86,16 @@ export default async function BlogPostPage(
 
       <div className="border-t border-border pt-8">
         <TiptapRenderer content={post.content as JSONContent} />
+      </div>
+
+      <div className="mt-12 bg-sage/5 border border-sage/10 rounded-2xl p-8 text-center">
+        <h3 className="text-lg font-semibold text-foreground">
+          Enjoyed this post?
+        </h3>
+        <p className="text-sm text-foreground-muted mt-1 mb-5">
+          Subscribe for more tips, guides, and inspiration.
+        </p>
+        <NewsletterForm variant="inline" />
       </div>
     </article>
   );

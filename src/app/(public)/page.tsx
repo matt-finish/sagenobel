@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { NewsletterForm } from "@/components/shared/newsletter-form";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -214,6 +215,20 @@ export default async function HomePage() {
           <p className="text-foreground-muted text-center py-8">
             Free guides and resources will appear here.
           </p>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="bg-sage/5 border-t border-sage/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+            Stay Inspired
+          </h2>
+          <p className="text-foreground-muted mt-3 mb-8 max-w-md mx-auto">
+            Get curated tips, new guides, and product drops delivered to your
+            inbox. No spam, ever.
+          </p>
+          <NewsletterForm />
         </div>
       </section>
     </div>

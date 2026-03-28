@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createGuide, updateGuide } from "@/lib/actions/guides";
 import { TiptapEditor } from "@/components/blog/tiptap-editor";
+import { ImageUpload } from "@/components/shared/image-upload";
+import { FileUpload } from "@/components/shared/file-upload";
 
 interface Guide {
   id: string;
@@ -17,6 +19,8 @@ interface Guide {
 
 export function GuideEditorForm({ guide }: { guide?: Guide }) {
   const [guideType, setGuideType] = useState(guide?.guide_type || "download");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(guide?.cover_image_url || null);
+  const [fileUrl, setFileUrl] = useState<string | null>(guide?.file_url || null);
   const [content, setContent] = useState(
     guide?.content ? JSON.stringify(guide.content) : ""
   );
@@ -28,6 +32,8 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
     setError(null);
 
     formData.set("guide_type", guideType);
+    formData.set("cover_image_url", coverImageUrl || "");
+    formData.set("file_url", fileUrl || "");
     if (guideType === "article") {
       formData.set("content", content);
     }
@@ -79,19 +85,12 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
         />
       </div>
 
-      <div>
-        <label htmlFor="cover_image_url" className="block text-sm font-medium text-foreground mb-1">
-          Cover Image URL
-        </label>
-        <input
-          id="cover_image_url"
-          name="cover_image_url"
-          type="url"
-          defaultValue={guide?.cover_image_url || ""}
-          className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          placeholder="https://..."
-        />
-      </div>
+      <ImageUpload
+        bucket="guide-covers"
+        value={coverImageUrl}
+        onChange={setCoverImageUrl}
+        label="Cover Image"
+      />
 
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
@@ -120,19 +119,13 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
       </div>
 
       {guideType === "download" && (
-        <div>
-          <label htmlFor="file_url" className="block text-sm font-medium text-foreground mb-1">
-            File URL
-          </label>
-          <input
-            id="file_url"
-            name="file_url"
-            type="url"
-            defaultValue={guide?.file_url || ""}
-            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-            placeholder="URL to downloadable file..."
-          />
-        </div>
+        <FileUpload
+          bucket="guide-files"
+          value={fileUrl}
+          onChange={setFileUrl}
+          label="Downloadable File"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+        />
       )}
 
       {guideType === "article" && (

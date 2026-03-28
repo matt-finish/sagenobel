@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createBlogPost, updateBlogPost } from "@/lib/actions/blog";
 import { TiptapEditor } from "./tiptap-editor";
+import { ImageUpload } from "@/components/shared/image-upload";
 
 interface BlogPost {
   id: string;
@@ -18,6 +19,7 @@ export function BlogEditorForm({ post }: { post?: BlogPost }) {
   const [content, setContent] = useState(
     post?.content ? JSON.stringify(post.content) : ""
   );
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(post?.cover_image_url || null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -26,6 +28,7 @@ export function BlogEditorForm({ post }: { post?: BlogPost }) {
     setError(null);
 
     formData.set("content", content);
+    formData.set("cover_image_url", coverImageUrl || "");
 
     const result = post
       ? await updateBlogPost(post.id, formData)
@@ -80,22 +83,12 @@ export function BlogEditorForm({ post }: { post?: BlogPost }) {
         />
       </div>
 
-      <div>
-        <label
-          htmlFor="cover_image_url"
-          className="block text-sm font-medium text-foreground mb-1"
-        >
-          Cover Image URL
-        </label>
-        <input
-          id="cover_image_url"
-          name="cover_image_url"
-          type="url"
-          defaultValue={post?.cover_image_url || ""}
-          className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          placeholder="https://..."
-        />
-      </div>
+      <ImageUpload
+        bucket="blog-images"
+        value={coverImageUrl}
+        onChange={setCoverImageUrl}
+        label="Cover Image"
+      />
 
       <div>
         <label className="block text-sm font-medium text-foreground mb-1">

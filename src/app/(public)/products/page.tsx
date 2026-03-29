@@ -62,9 +62,15 @@ export default async function ProductsPage(props: {
       <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-8">
         The Shop
       </h1>
-      <div className="mb-10 max-w-md">
+      <div className="mb-8 max-w-md">
         <PageSearch basePath="/products" placeholder="Search products..." />
       </div>
+
+      {products && products.some((p) => p.product_type === "affiliate") && (
+        <p className="text-[11px] text-foreground-muted mb-6 leading-relaxed">
+          Some links on this page are affiliate links. As an Amazon Associate, we earn from qualifying purchases. This comes at no additional cost to you.
+        </p>
+      )}
 
       {!products || products.length === 0 ? (
         <div className="bg-background-alt rounded-2xl p-12 text-center">
@@ -73,7 +79,7 @@ export default async function ProductsPage(props: {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {products.map((product) => {
             const rawImages = product.images as (string | ImageWithFocus)[];
             const firstImage = rawImages?.[0];
@@ -88,12 +94,12 @@ export default async function ProductsPage(props: {
               >
                 <div className="relative">
                   {firstImage ? (
-                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
                       <FocusImage image={firstImage} alt={product.name} />
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
-                      <span className="font-serif text-foreground-muted/10 text-6xl italic">SN</span>
+                    <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-3 image-hover border border-border">
+                      <span className="font-serif text-foreground-muted/10 text-5xl italic">SN</span>
                     </div>
                   )}
                   {isAffiliate && (

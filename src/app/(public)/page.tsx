@@ -11,6 +11,20 @@ export default async function HomePage() {
   const supabase = await createClient();
   const sections = await getSectionSettings();
 
+  // Fetch hero CTA settings
+  const { data: ctaPrimaryData } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "hero_cta")
+    .single();
+  const { data: ctaSecondaryData } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "hero_cta_secondary")
+    .single();
+  const primaryCta = (ctaPrimaryData?.value as { text: string; link: string }) || { text: "Explore the Blog", link: "/blog" };
+  const secondaryCta = (ctaSecondaryData?.value as { text: string; link: string }) || { text: "Shop Products", link: "/products" };
+
   const { data: featuredPost } = sections.blog
     ? await supabase
         .from("blog_posts")
@@ -73,17 +87,17 @@ export default async function HomePage() {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 animate-fade-in-up delay-300">
                 <Link
-                  href="/blog"
+                  href={primaryCta.link}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-sage px-7 py-3 text-white text-sm font-medium hover:bg-sage-dark transition-all duration-300 hover:shadow-lg hover:shadow-sage/20"
                 >
-                  Explore the Blog
+                  {primaryCta.text}
                   <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/products"
+                  href={secondaryCta.link}
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 px-7 py-3 text-foreground text-sm font-medium hover:border-sage hover:text-sage transition-all duration-300"
                 >
-                  Shop Products
+                  {secondaryCta.text}
                 </Link>
               </div>
             </div>

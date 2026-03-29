@@ -144,7 +144,7 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
       {linkedProducts.length > 0 && (
         <section className="mt-12">
           <h2 className="text-xl font-semibold text-foreground mb-4">Products Used in This Project</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             {linkedProducts.map((prod) => {
               const imgs = prod.images as (string | ImageWithFocus)[];
               const firstImage = imgs?.[0];
@@ -158,21 +158,21 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
                   className="group"
                 >
                   {firstImage ? (
-                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 image-hover">
+                    <div className="relative aspect-square rounded-lg overflow-hidden mb-1.5">
                       <FocusImage image={firstImage} alt={prod.name} />
                     </div>
                   ) : (
-                    <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-2 border border-border">
-                      <ShoppingBag size={24} className="text-foreground-muted/20" />
+                    <div className="aspect-square rounded-lg bg-background-alt flex items-center justify-center mb-1.5 border border-border">
+                      <ShoppingBag size={16} className="text-foreground-muted/20" />
                     </div>
                   )}
-                  <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300 line-clamp-2">
+                  <h3 className="text-xs font-medium text-foreground group-hover:text-sage transition-colors duration-300 line-clamp-2">
                     {prod.name}
                   </h3>
                   {isAffiliate ? (
-                    <span className="text-xs text-sage flex items-center gap-1 mt-0.5">Shop on Amazon <ExternalLink size={10} /></span>
+                    <span className="text-[10px] text-sage flex items-center gap-0.5 mt-0.5">Amazon <ExternalLink size={8} /></span>
                   ) : prod.price_cents ? (
-                    <p className="text-xs text-foreground-muted mt-0.5">{formatPrice(prod.price_cents)}</p>
+                    <p className="text-[10px] text-foreground-muted mt-0.5">{formatPrice(prod.price_cents)}</p>
                   ) : null}
                 </Link>
               );

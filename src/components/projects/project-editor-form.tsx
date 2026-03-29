@@ -31,6 +31,7 @@ interface Project {
   show_reviews: boolean;
   order_form_fields: FormField[];
   order_form_instructions: string | null;
+  linked_product_ids: string[];
   is_published: boolean;
   is_promoted: boolean;
   tags: string[];
@@ -41,13 +42,18 @@ interface Guide {
   title: string;
 }
 
+interface SiteProduct {
+  id: string;
+  name: string;
+}
+
 function normalizeGallery(images: (string | ImageValue)[]): ImageValue[] {
   return images.map((img) =>
     typeof img === "string" ? { url: img, focalX: 50, focalY: 50 } : { url: img.url, focalX: img.focalX ?? 50, focalY: img.focalY ?? 50 }
   );
 }
 
-export function ProjectEditorForm({ project, guides }: { project?: Project; guides: Guide[] }) {
+export function ProjectEditorForm({ project, guides, siteProducts }: { project?: Project; guides: Guide[]; siteProducts: SiteProduct[] }) {
   const [coverImage, setCoverImage] = useState<ImageValue | null>(
     project?.cover_image_url
       ? { url: project.cover_image_url, focalX: project?.cover_image_focal?.focalX ?? 50, focalY: project?.cover_image_focal?.focalY ?? 50 }
@@ -58,6 +64,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
   const [videoUrls, setVideoUrls] = useState<string[]>(project?.video_urls || []);
   const [productLinks, setProductLinks] = useState<ProductLink[]>(project?.product_links || []);
   const [selectedGuides, setSelectedGuides] = useState<string[]>(project?.guide_ids || []);
+  const [linkedProductIds, setLinkedProductIds] = useState<string[]>(project?.linked_product_ids || []);
   const [orderFormFields, setOrderFormFields] = useState<FormField[]>(project?.order_form_fields || []);
 
   const [showGallery, setShowGallery] = useState(project?.show_gallery ?? true);
@@ -105,6 +112,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
       video_urls: videoUrls,
       product_links: productLinks,
       guide_ids: selectedGuides,
+      linked_product_ids: linkedProductIds,
       show_gallery: showGallery,
       show_videos: showVideos,
       show_guides: showGuides,
@@ -282,6 +290,46 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
             className="inline-flex items-center gap-1 text-xs text-sage hover:text-sage-dark font-medium"><Plus size={14} />Add Link</button>
         </section>
       )}
+
+      {/* Linked Site Products */}
+      <section className="space-y-3">
+        <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Products Used in This Project</h3>
+        <p className="text-xs text-foreground-muted">Select products from your shop to feature at the bottom of this project page.</p>
+        {linkedProductIds.length > 0 && (
+          <div className="space-y-2">
+            {linkedProductIds.map((id) => {
+              const prod = siteProducts.find((p) => p.id === id);
+              if (!prod) return null;
+              return (
+                <div key={id} className="flex items-center justify-between px-3 py-2 bg-background-alt rounded-lg">
+                  <span className="text-sm text-foreground">{prod.name}</span>
+                  <button type="button" onClick={() => setLinkedProductIds(linkedProductIds.filter((pid) => pid !== id))}
+                    className="text-xs text-error/70 hover:text-error font-medium">Remove</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {siteProducts.filter((p) => !linkedProductIds.includes(p.id)).length > 0 && (
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                setLinkedProductIds([...linkedProductIds, e.target.value]);
+                e.target.value = "";
+              }
+            }}
+            className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+          >
+            <option value="">Add a product...</option>
+            {siteProducts
+              .filter((p) => !linkedProductIds.includes(p.id))
+              .map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+          </select>
+        )}
+      </section>
 
       {/* Order Form */}
       {showOrderForm && (

@@ -14,6 +14,7 @@ export async function createProject(data: {
   video_urls: string[];
   product_links: { label: string; url: string }[];
   guide_ids: string[];
+  linked_product_ids: string[];
   show_gallery: boolean;
   show_videos: boolean;
   show_guides: boolean;
@@ -55,6 +56,7 @@ export async function updateProject(id: string, data: {
   video_urls: string[];
   product_links: { label: string; url: string }[];
   guide_ids: string[];
+  linked_product_ids: string[];
   show_gallery: boolean;
   show_videos: boolean;
   show_guides: boolean;

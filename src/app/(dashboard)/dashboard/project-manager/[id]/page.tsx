@@ -25,12 +25,19 @@ export default async function EditProjectPage(
     .eq("is_published", true)
     .order("title");
 
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name")
+    .eq("is_active", true)
+    .order("name");
+
   return (
     <div className="max-w-4xl space-y-6">
       <h2 className="text-2xl font-semibold text-foreground">Edit Project</h2>
       <ProjectEditorForm
         project={project as Parameters<typeof ProjectEditorForm>[0]["project"]}
         guides={guides || []}
+        siteProducts={products || []}
       />
     </div>
   );

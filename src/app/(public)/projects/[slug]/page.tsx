@@ -2,7 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Download, Star } from "lucide-react";
+import { ArrowLeft, ExternalLink, Download, Star, ShoppingBag } from "lucide-react";
+import { FocusImage, type ImageWithFocus } from "@/components/shared/focus-image";
+import { formatPrice } from "@/lib/utils";
 import { ProjectGallery } from "@/components/projects/project-gallery";
 import { ProjectReviewForm } from "@/components/projects/project-review-form";
 import { ProjectOrderForm } from "@/components/projects/project-order-form";
@@ -39,6 +41,14 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
   const productLinks = project.product_links as { label: string; url: string }[];
   const guideIds = project.guide_ids as string[];
   const orderFormFields = project.order_form_fields as { id: string; label: string; type: string; required: boolean; options: string[] }[];
+  const linkedProductIds = (project.linked_product_ids || []) as string[];
+
+  // Fetch linked site products
+  let linkedProducts: { id: string; name: string; slug: string; price_cents: number | null; images: unknown; product_type: string; affiliate_url: string | null }[] = [];
+  if (linkedProductIds.length > 0) {
+    const { data } = await supabase.from("products").select("id, name, slug, price_cents, images, product_type, affiliate_url").in("id", linkedProductIds).eq("is_active", true);
+    linkedProducts = data || [];
+  }
 
   // Fetch linked guides
   let guides: { id: string; title: string; slug: string; guide_type: string }[] = [];
@@ -126,6 +136,47 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
                 <ExternalLink size={14} className="text-foreground-muted group-hover:text-sage" />
               </a>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Linked Site Products */}
+      {linkedProducts.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-semibold text-foreground mb-4">Products Used in This Project</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {linkedProducts.map((prod) => {
+              const imgs = prod.images as (string | ImageWithFocus)[];
+              const firstImage = imgs?.[0];
+              const isAffiliate = prod.product_type === "affiliate";
+              const href = isAffiliate ? prod.affiliate_url || "#" : `/products/${prod.slug}`;
+              return (
+                <Link
+                  key={prod.id}
+                  href={href}
+                  {...(isAffiliate ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="group"
+                >
+                  {firstImage ? (
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2 image-hover">
+                      <FocusImage image={firstImage} alt={prod.name} />
+                    </div>
+                  ) : (
+                    <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-2 border border-border">
+                      <ShoppingBag size={24} className="text-foreground-muted/20" />
+                    </div>
+                  )}
+                  <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300 line-clamp-2">
+                    {prod.name}
+                  </h3>
+                  {isAffiliate ? (
+                    <span className="text-xs text-sage flex items-center gap-1 mt-0.5">Shop on Amazon <ExternalLink size={10} /></span>
+                  ) : prod.price_cents ? (
+                    <p className="text-xs text-foreground-muted mt-0.5">{formatPrice(prod.price_cents)}</p>
+                  ) : null}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

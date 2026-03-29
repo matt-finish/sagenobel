@@ -12,10 +12,16 @@ export default async function NewProjectPage() {
     .eq("is_published", true)
     .order("title");
 
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name")
+    .eq("is_active", true)
+    .order("name");
+
   return (
     <div className="max-w-4xl space-y-6">
       <h2 className="text-2xl font-semibold text-foreground">Create New Project</h2>
-      <ProjectEditorForm guides={guides || []} />
+      <ProjectEditorForm guides={guides || []} siteProducts={products || []} />
     </div>
   );
 }

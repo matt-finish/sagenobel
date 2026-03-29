@@ -21,12 +21,13 @@ export async function createProduct(formData: FormData) {
   const tags = formData.get("tags") as string;
   const showDisclaimer = formData.get("show_disclaimer") === "true";
   const disclaimerText = formData.get("disclaimer") as string;
-  const sectionId = formData.get("section_id") as string;
+  const sectionIdsRaw = formData.get("section_ids") as string;
+  const sectionIds: string[] = sectionIdsRaw ? JSON.parse(sectionIdsRaw) : [];
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);
 
-  const { error } = await supabase.from("products").insert({
+  const { data: product, error } = await supabase.from("products").insert({
     name,
     slug,
     description,
@@ -38,15 +39,21 @@ export async function createProduct(formData: FormData) {
     tags: tags ? JSON.parse(tags) : [],
     show_disclaimer: showDisclaimer,
     disclaimer: showDisclaimer ? disclaimerText || null : null,
-    section_id: sectionId || null,
     is_active: isActive,
-  });
+  }).select("id").single();
 
   if (error) {
     if (error.code === "23505") {
       return { error: "A product with this name already exists." };
     }
     return { error: error.message };
+  }
+
+  // Insert section assignments
+  if (sectionIds.length > 0 && product) {
+    await supabase.from("product_section_items").insert(
+      sectionIds.map((sectionId) => ({ product_id: product.id, section_id: sectionId }))
+    );
   }
 
   revalidatePath("/products");
@@ -70,7 +77,8 @@ export async function updateProduct(id: string, formData: FormData) {
   const tags = formData.get("tags") as string;
   const showDisclaimer = formData.get("show_disclaimer") === "true";
   const disclaimerText = formData.get("disclaimer") as string;
-  const sectionId = formData.get("section_id") as string;
+  const sectionIdsRaw = formData.get("section_ids") as string;
+  const sectionIds: string[] = sectionIdsRaw ? JSON.parse(sectionIdsRaw) : [];
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);
@@ -94,6 +102,14 @@ export async function updateProduct(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  // Replace section assignments
+  await supabase.from("product_section_items").delete().eq("product_id", id);
+  if (sectionIds.length > 0) {
+    await supabase.from("product_section_items").insert(
+      sectionIds.map((sectionId) => ({ product_id: id, section_id: sectionId }))
+    );
+  }
 
   revalidatePath("/products");
   revalidatePath("/");

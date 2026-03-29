@@ -35,7 +35,7 @@ interface Product {
   affiliate_url: string | null;
   disclaimer: string | null;
   show_disclaimer: boolean;
-  section_id: string | null;
+  section_ids: string[];
   tags: string[];
 }
 
@@ -60,6 +60,7 @@ export function ProductEditorForm({ product, sections = [] }: { product?: Produc
     product?.custom_fields || []
   );
   const [tags, setTags] = useState<string[]>(product?.tags || []);
+  const [selectedSections, setSelectedSections] = useState<string[]>(product?.section_ids || []);
   const [showDisclaimer, setShowDisclaimer] = useState(product?.show_disclaimer ?? false);
   const [disclaimer, setDisclaimer] = useState(
     product?.disclaimer ?? "As an Amazon Associate, we may earn from qualifying purchases."
@@ -160,6 +161,7 @@ export function ProductEditorForm({ product, sections = [] }: { product?: Produc
     formData.set("tags", JSON.stringify(tags));
     formData.set("show_disclaimer", showDisclaimer ? "true" : "false");
     formData.set("disclaimer", showDisclaimer ? disclaimer : "");
+    formData.set("section_ids", JSON.stringify(selectedSections));
 
     const result = product
       ? await updateProduct(product.id, formData)
@@ -238,14 +240,27 @@ export function ProductEditorForm({ product, sections = [] }: { product?: Produc
 
       {sections.length > 0 && (
         <div>
-          <label htmlFor="section_id" className="block text-sm font-medium text-foreground mb-1">Section</label>
-          <select id="section_id" name="section_id" defaultValue={product?.section_id || ""}
-            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage">
-            <option value="">No section (Uncategorized)</option>
+          <label className="block text-sm font-medium text-foreground mb-2">Sections</label>
+          <p className="text-xs text-foreground-muted mb-2">Select which sections this product appears in. A product can be in multiple sections.</p>
+          <div className="space-y-1.5">
             {sections.map((s) => (
-              <option key={s.id} value={s.id}>{s.title}</option>
+              <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedSections.includes(s.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedSections([...selectedSections, s.id]);
+                    } else {
+                      setSelectedSections(selectedSections.filter((id) => id !== s.id));
+                    }
+                  }}
+                  className="rounded border-border text-sage focus:ring-sage"
+                />
+                <span className="text-sm text-foreground">{s.title}</span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
       )}
 

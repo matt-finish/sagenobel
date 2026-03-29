@@ -15,7 +15,7 @@ export default async function EditProductPage(
 
   const { data: product } = await supabase
     .from("products")
-    .select("id, name, description, price_cents, images, custom_fields, is_active, product_type, affiliate_url, tags, show_disclaimer, disclaimer, section_id")
+    .select("id, name, description, price_cents, images, custom_fields, is_active, product_type, affiliate_url, tags, show_disclaimer, disclaimer")
     .eq("id", id)
     .single();
 
@@ -26,11 +26,19 @@ export default async function EditProductPage(
     .select("id, title")
     .order("sort_order");
 
+  // Get section IDs from junction table
+  const { data: sectionItems } = await supabase
+    .from("product_section_items")
+    .select("section_id")
+    .eq("product_id", id);
+
+  const sectionIds = (sectionItems || []).map((item) => item.section_id);
+
   return (
     <div className="max-w-4xl space-y-6">
       <h2 className="text-2xl font-semibold text-foreground">Edit Product</h2>
       <ProductEditorForm
-        product={product as Parameters<typeof ProductEditorForm>[0]["product"]}
+        product={{ ...product, section_ids: sectionIds } as Parameters<typeof ProductEditorForm>[0]["product"]}
         sections={sections || []}
       />
     </div>

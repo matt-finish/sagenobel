@@ -67,7 +67,7 @@ export default async function ProductsPage(props: {
 
   let dbQuery = supabase
     .from("products")
-    .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags, section_id")
+    .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags")
     .eq("is_active", true);
 
   if (query) {
@@ -80,7 +80,7 @@ export default async function ProductsPage(props: {
   if (searchTerm) {
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags, section_id")
+      .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags")
       .eq("is_active", true)
       .contains("tags", [searchTerm]);
     tagResults = data || [];
@@ -93,20 +93,32 @@ export default async function ProductsPage(props: {
     return true;
   });
 
-  // Fetch sections
+  // Fetch sections and their product assignments
   const { data: sections } = await supabase
     .from("product_sections")
     .select("id, title")
     .eq("is_visible", true)
     .order("sort_order");
 
-  // Group products by section
-  const sectionMap = new Map<string | null, typeof products>();
-  for (const product of products) {
-    const key = product.section_id;
-    if (!sectionMap.has(key)) sectionMap.set(key, []);
-    sectionMap.get(key)!.push(product);
+  const { data: sectionItems } = await supabase
+    .from("product_section_items")
+    .select("product_id, section_id");
+
+  // Group products by section (a product can appear in multiple sections)
+  const productMap = new Map(products.map((p) => [p.id, p]));
+  const sectionMap = new Map<string, typeof products>();
+  const assignedProductIds = new Set<string>();
+
+  for (const item of sectionItems || []) {
+    const product = productMap.get(item.product_id);
+    if (!product) continue;
+    assignedProductIds.add(item.product_id);
+    if (!sectionMap.has(item.section_id)) sectionMap.set(item.section_id, []);
+    sectionMap.get(item.section_id)!.push(product);
   }
+
+  // Uncategorized = products not in any section
+  const uncategorized = products.filter((p) => !assignedProductIds.has(p.id));
 
   const hasAffiliate = products.some((p) => p.product_type === "affiliate");
 
@@ -166,7 +178,7 @@ export default async function ProductsPage(props: {
           })}
 
           {/* Uncategorized products */}
-          {sectionMap.get(null) && sectionMap.get(null)!.length > 0 && (
+          {uncategorized.length > 0 && (
             <section>
               {(sections || []).length > 0 && (
                 <div className="flex items-center gap-3 mb-5">
@@ -175,7 +187,7 @@ export default async function ProductsPage(props: {
                 </div>
               )}
               <HorizontalScroll>
-                {sectionMap.get(null)!.map((product) => (
+                {uncategorized.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </HorizontalScroll>

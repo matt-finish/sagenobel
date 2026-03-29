@@ -4,18 +4,38 @@ import { useState } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
-export function ProjectGallery({ images }: { images: string[] }) {
+interface ImageValue {
+  url: string;
+  focalX?: number;
+  focalY?: number;
+}
+
+function getUrl(img: string | ImageValue): string {
+  return typeof img === "string" ? img : img.url;
+}
+
+function getFocal(img: string | ImageValue): { x: number; y: number } {
+  if (typeof img === "string") return { x: 50, y: 50 };
+  return { x: img.focalX ?? 50, y: img.focalY ?? 50 };
+}
+
+export function ProjectGallery({ images }: { images: (string | ImageValue)[] }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {images.map((url, i) => (
-          <button key={i} onClick={() => setLightboxIndex(i)}
-            className="relative aspect-square rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity cursor-pointer">
-            <Image src={url} alt={`Gallery image ${i + 1}`} fill className="object-cover" />
-          </button>
-        ))}
+        {images.map((img, i) => {
+          const url = getUrl(img);
+          const focal = getFocal(img);
+          return (
+            <button key={i} onClick={() => setLightboxIndex(i)}
+              className="relative aspect-square rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity cursor-pointer">
+              <Image src={url} alt={`Gallery image ${i + 1}`} fill className="object-cover"
+                style={{ objectPosition: `${focal.x}% ${focal.y}%` }} />
+            </button>
+          );
+        })}
       </div>
 
       {lightboxIndex !== null && (
@@ -32,7 +52,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
           )}
 
           <div className="relative max-w-4xl max-h-[80vh] w-full h-full m-8" onClick={e => e.stopPropagation()}>
-            <Image src={images[lightboxIndex]} alt={`Gallery image ${lightboxIndex + 1}`} fill className="object-contain" />
+            <Image src={getUrl(images[lightboxIndex])} alt={`Gallery image ${lightboxIndex + 1}`} fill className="object-contain" />
           </div>
         </div>
       )}

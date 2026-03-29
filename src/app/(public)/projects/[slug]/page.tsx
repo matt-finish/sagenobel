@@ -34,7 +34,7 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
   const { data: project } = await supabase.from("projects").select("*").eq("slug", slug).eq("is_published", true).single();
   if (!project) notFound();
 
-  const galleryImages = project.gallery_images as string[];
+  const galleryImages = project.gallery_images as (string | { url: string; focalX?: number; focalY?: number })[];
   const videoUrls = project.video_urls as string[];
   const productLinks = project.product_links as { label: string; url: string }[];
   const guideIds = project.guide_ids as string[];

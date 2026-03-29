@@ -40,7 +40,7 @@ export default async function HomePage() {
         .select("id, name, slug, price_cents, images")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
-        .limit(3)
+        .limit(4)
     : { data: null };
 
   const { data: promotedProjects } = sections.projects
@@ -340,22 +340,22 @@ export default async function HomePage() {
               View all<ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {recentProducts.map((product) => {
               const firstImage = (product.images as (string | ImageWithFocus)[])?.[0];
               return (
                 <Link key={product.id} href={`/products/${product.slug}`} className="group">
                   {firstImage ? (
-                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
                       <FocusImage image={firstImage} alt={product.name} />
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
-                      <span className="font-serif text-foreground-muted/10 text-6xl italic">SN</span>
+                    <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-3 image-hover border border-border">
+                      <span className="font-serif text-foreground-muted/10 text-5xl italic">SN</span>
                     </div>
                   )}
-                  <h3 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">{product.name}</h3>
-                  <p className="text-sm text-foreground-muted mt-1">{formatPrice(product.price_cents)}</p>
+                  <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300">{product.name}</h3>
+                  <p className="text-xs text-foreground-muted mt-0.5">{formatPrice(product.price_cents)}</p>
                 </Link>
               );
             })}

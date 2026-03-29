@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
 import { formatPrice } from "@/lib/utils";
+import { FocusImage, getImageUrl, type ImageWithFocus } from "@/components/shared/focus-image";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -74,7 +75,7 @@ export default async function HomePage() {
               <div className="space-y-3">
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
                   {recentProducts?.[0]?.images?.[0] ? (
-                    <Image src={(recentProducts[0].images as string[])[0]} alt="" fill className="object-cover !relative" />
+                    <FocusImage image={(recentProducts[0].images as (string | ImageWithFocus)[])[0]} alt="" className="object-cover !relative" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
@@ -97,7 +98,7 @@ export default async function HomePage() {
                 </div>
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
                   {recentProducts?.[1]?.images?.[0] ? (
-                    <Image src={(recentProducts[1].images as string[])[0]} alt="" fill className="object-cover !relative" />
+                    <FocusImage image={(recentProducts[1].images as (string | ImageWithFocus)[])[0]} alt="" className="object-cover !relative" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
@@ -250,21 +251,16 @@ export default async function HomePage() {
         {recentProducts && recentProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {recentProducts.map((product) => {
-              const images = product.images as string[];
+              const firstImage = (product.images as (string | ImageWithFocus)[])?.[0];
               return (
                 <Link
                   key={product.id}
                   href={`/products/${product.slug}`}
                   className="group"
                 >
-                  {images?.[0] ? (
+                  {firstImage ? (
                     <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
-                      <Image
-                        src={images[0]}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
+                      <FocusImage image={firstImage} alt={product.name} />
                     </div>
                   ) : (
                     <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">

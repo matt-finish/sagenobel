@@ -2,9 +2,11 @@
 
 import { useState, useRef } from "react";
 import { createProduct, updateProduct } from "@/lib/actions/products";
-import { Plus, Trash2, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2, Crosshair } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { FocalPointPicker } from "@/components/shared/focal-point-picker";
+import type { ImageWithFocus } from "@/components/shared/focus-image";
 
 interface PricingOption {
   label: string;
@@ -25,13 +27,22 @@ interface Product {
   name: string;
   description: string | null;
   price_cents: number;
-  images: string[];
+  images: (string | ImageWithFocus)[];
   custom_fields: CustomField[];
   is_active: boolean;
 }
 
+function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] {
+  return images.map((img) =>
+    typeof img === "string" ? { url: img, focalX: 50, focalY: 50 } : img
+  );
+}
+
 export function ProductEditorForm({ product }: { product?: Product }) {
-  const [images, setImages] = useState<string[]>(product?.images || []);
+  const [images, setImages] = useState<ImageWithFocus[]>(
+    normalizeImages(product?.images || [])
+  );
+  const [editingFocal, setEditingFocal] = useState<number | null>(null);
   const [customFields, setCustomFields] = useState<CustomField[]>(
     product?.custom_fields || []
   );
@@ -63,7 +74,7 @@ export function ProductEditorForm({ product }: { product?: Product }) {
       }
 
       const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
-      setImages((prev) => [...prev, data.publicUrl]);
+      setImages((prev) => [...prev, { url: data.publicUrl, focalX: 50, focalY: 50 }]);
     }
 
     setUploading(false);
@@ -177,15 +188,40 @@ export function ProductEditorForm({ product }: { product?: Product }) {
         <label className="block text-sm font-medium text-foreground mb-2">Images</label>
         {images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-            {images.map((url, i) => (
+            {images.map((img, i) => (
               <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
-                <Image src={url} alt={`Product image ${i + 1}`} fill className="object-cover" />
-                <button type="button" onClick={() => setImages(images.filter((_, j) => j !== i))}
-                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Trash2 size={14} />
-                </button>
+                <Image src={img.url} alt={`Product image ${i + 1}`} fill className="object-cover"
+                  style={{ objectPosition: `${img.focalX}% ${img.focalY}%` }} />
+                <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button type="button" onClick={() => setEditingFocal(editingFocal === i ? null : i)}
+                    className="p-1 bg-black/60 rounded-full text-white" title="Set focal point">
+                    <Crosshair size={14} />
+                  </button>
+                  <button type="button" onClick={() => { setImages(images.filter((_, j) => j !== i)); if (editingFocal === i) setEditingFocal(null); }}
+                    className="p-1 bg-black/60 rounded-full text-white">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+        {editingFocal !== null && images[editingFocal] && (
+          <div className="border border-sage/30 rounded-xl p-4 bg-sage/5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-foreground">Set Focal Point — Image {editingFocal + 1}</p>
+              <button type="button" onClick={() => setEditingFocal(null)} className="text-xs text-foreground-muted hover:text-foreground">Done</button>
+            </div>
+            <FocalPointPicker
+              src={images[editingFocal].url}
+              focalX={images[editingFocal].focalX ?? 50}
+              focalY={images[editingFocal].focalY ?? 50}
+              onChange={(x, y) => {
+                const updated = [...images];
+                updated[editingFocal] = { ...updated[editingFocal], focalX: x, focalY: y };
+                setImages(updated);
+              }}
+            />
           </div>
         )}
         <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" id="image-upload" />

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
+import { FocusImage, type ImageWithFocus } from "@/components/shared/focus-image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -38,21 +38,17 @@ export default async function ProductsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => {
-            const images = product.images as string[];
+            const rawImages = product.images as (string | ImageWithFocus)[];
+            const firstImage = rawImages?.[0];
             return (
               <Link
                 key={product.id}
                 href={`/products/${product.slug}`}
                 className="group"
               >
-                {images?.[0] ? (
+                {firstImage ? (
                   <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
-                    <Image
-                      src={images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
+                    <FocusImage image={firstImage} alt={product.name} />
                   </div>
                 ) : (
                   <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">

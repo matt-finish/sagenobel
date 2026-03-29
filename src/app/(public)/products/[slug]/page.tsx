@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AddToCartButton } from "@/components/products/add-to-cart-button";
+import { FocusImage, getImageUrl, type ImageWithFocus } from "@/components/shared/focus-image";
 import type { Metadata } from "next";
 
 export async function generateMetadata(
@@ -43,7 +43,10 @@ export default async function ProductPage(
 
   if (!product) notFound();
 
-  const images = product.images as string[];
+  const rawImages = product.images as (string | ImageWithFocus)[];
+  const images = rawImages?.map((img) =>
+    typeof img === "string" ? { url: img, focalX: 50, focalY: 50 } : img
+  ) || [];
   const customFields = product.custom_fields as {
     id: string;
     label: string;
@@ -66,36 +69,25 @@ export default async function ProductPage(
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Images */}
         <div className="space-y-4">
-          {images?.[0] ? (
+          {images[0] ? (
             <div className="relative aspect-square rounded-2xl overflow-hidden">
-              <Image
-                src={images[0]}
-                alt={product.name}
-                fill
-                className="object-cover"
-                priority
-              />
+              <FocusImage image={images[0]} alt={product.name} priority />
             </div>
           ) : (
             <div className="aspect-square rounded-2xl bg-background-alt flex items-center justify-center">
-              <span className="text-foreground-muted/20 text-7xl font-serif">
+              <span className="font-serif text-foreground-muted/10 text-7xl italic">
                 SN
               </span>
             </div>
           )}
-          {images && images.length > 1 && (
+          {images.length > 1 && (
             <div className="grid grid-cols-4 gap-3">
-              {images.slice(1).map((url, i) => (
+              {images.slice(1).map((img, i) => (
                 <div
                   key={i}
                   className="relative aspect-square rounded-lg overflow-hidden"
                 >
-                  <Image
-                    src={url}
-                    alt={`${product.name} image ${i + 2}`}
-                    fill
-                    className="object-cover"
-                  />
+                  <FocusImage image={img} alt={`${product.name} image ${i + 2}`} />
                 </div>
               ))}
             </div>
@@ -135,7 +127,7 @@ export default async function ProductPage(
             productId={product.id}
             productName={product.name}
             priceCents={product.price_cents}
-            image={images?.[0]}
+            image={images[0] ? getImageUrl(images[0]) : undefined}
             customFields={customFields}
           />
         </div>

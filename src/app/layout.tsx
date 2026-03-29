@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Bodoni_Moda, Geist_Mono } from "next/font/google";
+import { DM_Sans, Cormorant_Garamond, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import "./globals.css";
 
@@ -8,9 +8,10 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-const bodoni = Bodoni_Moda({
+const cormorant = Cormorant_Garamond({
   variable: "--font-playfair",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${bodoni.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${cormorant.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <CartProvider>{children}</CartProvider>

@@ -7,10 +7,12 @@ import { ArrowLeft } from "lucide-react";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
 import type { Metadata } from "next";
 import type { JSONContent } from "@tiptap/react";
+import { requireSection } from "@/lib/check-section";
 
 export async function generateMetadata(
   props: PageProps<"/blog/[slug]">
 ): Promise<Metadata> {
+  await requireSection("blog");
   const { slug } = await props.params;
   const supabase = await createClient();
 
@@ -32,6 +34,7 @@ export async function generateMetadata(
 export default async function BlogPostPage(
   props: PageProps<"/blog/[slug]">
 ) {
+  await requireSection("blog");
   const { slug } = await props.params;
   const supabase = await createClient();
 

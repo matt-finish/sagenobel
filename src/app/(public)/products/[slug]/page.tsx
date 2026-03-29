@@ -6,10 +6,12 @@ import { ArrowLeft } from "lucide-react";
 import { AddToCartButton } from "@/components/products/add-to-cart-button";
 import { FocusImage, getImageUrl, type ImageWithFocus } from "@/components/shared/focus-image";
 import type { Metadata } from "next";
+import { requireSection } from "@/lib/check-section";
 
 export async function generateMetadata(
   props: PageProps<"/products/[slug]">
 ): Promise<Metadata> {
+  await requireSection("products");
   const { slug } = await props.params;
   const supabase = await createClient();
 
@@ -31,6 +33,7 @@ export async function generateMetadata(
 export default async function ProductPage(
   props: PageProps<"/products/[slug]">
 ) {
+  await requireSection("products");
   const { slug } = await props.params;
   const supabase = await createClient();
 

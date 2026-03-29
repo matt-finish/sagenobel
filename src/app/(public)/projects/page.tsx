@@ -2,17 +2,30 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { PageSearch } from "@/components/shared/page-search";
 import type { Metadata } from "next";
+import { requireSection } from "@/lib/check-section";
 
 export const metadata: Metadata = { title: "Projects" };
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage(props: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  await requireSection("projects");
+  const searchParams = await props.searchParams;
+  const query = searchParams.q || "";
   const supabase = await createClient();
-  const { data: projects } = await supabase
+
+  let dbQuery = supabase
     .from("projects")
     .select("id, title, slug, description, cover_image_url")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+    .eq("is_published", true);
+
+  if (query) {
+    dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+  }
+
+  const { data: projects } = await dbQuery.order("created_at", { ascending: false });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
@@ -25,9 +38,12 @@ export default async function ProjectsPage() {
       <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-3">
         Projects
       </h1>
-      <p className="text-foreground-muted text-lg mb-12 max-w-2xl">
+      <p className="text-foreground-muted text-lg mb-8 max-w-2xl">
         Explore our curated projects — get guides, watch tutorials, shop products, and share your results.
       </p>
+      <div className="mb-10 max-w-md">
+        <PageSearch basePath="/projects" placeholder="Search projects..." />
+      </div>
 
       {!projects || projects.length === 0 ? (
         <div className="bg-background-alt rounded-2xl p-16 text-center">

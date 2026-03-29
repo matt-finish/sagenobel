@@ -23,6 +23,7 @@ export async function createProject(data: {
   order_form_fields: { id: string; label: string; type: string; required: boolean; options: string[] }[];
   order_form_instructions: string;
   is_published: boolean;
+  is_promoted: boolean;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -62,6 +63,7 @@ export async function updateProject(id: string, data: {
   order_form_fields: { id: string; label: string; type: string; required: boolean; options: string[] }[];
   order_form_instructions: string;
   is_published: boolean;
+  is_promoted: boolean;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

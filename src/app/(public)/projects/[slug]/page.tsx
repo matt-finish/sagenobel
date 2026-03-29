@@ -7,8 +7,10 @@ import { ProjectGallery } from "@/components/projects/project-gallery";
 import { ProjectReviewForm } from "@/components/projects/project-review-form";
 import { ProjectOrderForm } from "@/components/projects/project-order-form";
 import type { Metadata } from "next";
+import { requireSection } from "@/lib/check-section";
 
 export async function generateMetadata(props: PageProps<"/projects/[slug]">): Promise<Metadata> {
+  await requireSection("projects");
   const { slug } = await props.params;
   const supabase = await createClient();
   const { data } = await supabase.from("projects").select("title, description").eq("slug", slug).eq("is_published", true).single();
@@ -25,6 +27,7 @@ function getEmbedUrl(url: string): string | null {
 }
 
 export default async function ProjectPage(props: PageProps<"/projects/[slug]">) {
+  await requireSection("projects");
   const { slug } = await props.params;
   const supabase = await createClient();
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BlogSearch } from "@/components/blog/blog-search";
 import type { Metadata } from "next";
+import { requireSection } from "@/lib/check-section";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default async function BlogPage(props: {
   searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
+  await requireSection("blog");
   const searchParams = await props.searchParams;
   const query = searchParams.q || "";
   const sort = searchParams.sort || "newest";

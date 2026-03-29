@@ -6,10 +6,12 @@ import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import type { Metadata } from "next";
 import type { JSONContent } from "@tiptap/react";
+import { requireSection } from "@/lib/check-section";
 
 export async function generateMetadata(
   props: PageProps<"/guides/[slug]">
 ): Promise<Metadata> {
+  await requireSection("guides");
   const { slug } = await props.params;
   const supabase = await createClient();
 
@@ -31,6 +33,7 @@ export async function generateMetadata(
 export default async function GuidePage(
   props: PageProps<"/guides/[slug]">
 ) {
+  await requireSection("guides");
   const { slug } = await props.params;
   const supabase = await createClient();
 

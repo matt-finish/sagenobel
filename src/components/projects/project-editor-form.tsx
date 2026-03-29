@@ -31,6 +31,7 @@ interface Project {
   order_form_fields: FormField[];
   order_form_instructions: string | null;
   is_published: boolean;
+  is_promoted: boolean;
 }
 
 interface Guide {
@@ -110,6 +111,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
       order_form_fields: orderFormFields,
       order_form_instructions: formData.get("order_form_instructions") as string,
       is_published: formData.get("is_published") === "true",
+      is_promoted: formData.get("is_promoted") === "true",
     };
 
     const result = project
@@ -320,6 +322,10 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" name="is_published" value="true" defaultChecked={project?.is_published} className="rounded border-border text-sage focus:ring-sage" />
           <span className="text-sm text-foreground">Published</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="is_promoted" value="true" defaultChecked={project?.is_promoted} className="rounded border-border text-accent focus:ring-accent" />
+          <span className="text-sm text-foreground">Promoted on Homepage</span>
         </label>
       </div>
 

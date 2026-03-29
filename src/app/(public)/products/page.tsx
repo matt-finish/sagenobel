@@ -2,20 +2,32 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import { FocusImage, type ImageWithFocus } from "@/components/shared/focus-image";
+import { PageSearch } from "@/components/shared/page-search";
 import type { Metadata } from "next";
+import { requireSection } from "@/lib/check-section";
 
 export const metadata: Metadata = {
   title: "Products",
 };
 
-export default async function ProductsPage() {
+export default async function ProductsPage(props: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  await requireSection("products");
+  const searchParams = await props.searchParams;
+  const query = searchParams.q || "";
   const supabase = await createClient();
 
-  const { data: products } = await supabase
+  let dbQuery = supabase
     .from("products")
     .select("id, name, slug, price_cents, images, description")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+    .eq("is_active", true);
+
+  if (query) {
+    dbQuery = dbQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+  }
+
+  const { data: products } = await dbQuery.order("created_at", { ascending: false });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
@@ -25,9 +37,12 @@ export default async function ProductsPage() {
           Curated
         </span>
       </div>
-      <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-10">
+      <h1 className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-8">
         The Shop
       </h1>
+      <div className="mb-10 max-w-md">
+        <PageSearch basePath="/products" placeholder="Search products..." />
+      </div>
 
       {!products || products.length === 0 ? (
         <div className="bg-background-alt rounded-2xl p-12 text-center">

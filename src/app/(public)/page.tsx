@@ -2,34 +2,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getSectionSettings } from "@/lib/actions/settings";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
 import { formatPrice } from "@/lib/utils";
 import { FocusImage, getImageUrl, type ImageWithFocus } from "@/components/shared/focus-image";
 
 export default async function HomePage() {
   const supabase = await createClient();
+  const sections = await getSectionSettings();
 
-  const { data: featuredPost } = await supabase
-    .from("blog_posts")
-    .select("title, slug, excerpt, cover_image_url, created_at")
-    .eq("is_published", true)
-    .eq("is_featured", true)
-    .single();
+  const { data: featuredPost } = sections.blog
+    ? await supabase
+        .from("blog_posts")
+        .select("title, slug, excerpt, cover_image_url, created_at")
+        .eq("is_published", true)
+        .eq("is_featured", true)
+        .single()
+    : { data: null };
 
-  const { data: recentProducts } = await supabase
-    .from("products")
-    .select("id, name, slug, price_cents, images")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(3);
+  const { data: recentProducts } = sections.products
+    ? await supabase
+        .from("products")
+        .select("id, name, slug, price_cents, images")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : { data: null };
 
-  const { data: recentPosts } = await supabase
-    .from("blog_posts")
-    .select("id, title, slug, excerpt, cover_image_url, created_at")
-    .eq("is_published", true)
-    .eq("is_featured", false)
-    .order("created_at", { ascending: false })
-    .limit(3);
+  const { data: promotedProjects } = sections.projects
+    ? await supabase
+        .from("projects")
+        .select("id, title, slug, description, cover_image_url")
+        .eq("is_published", true)
+        .eq("is_promoted", true)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : { data: null };
+
+  const { data: recentPosts } = sections.blog
+    ? await supabase
+        .from("blog_posts")
+        .select("id, title, slug, excerpt, cover_image_url, created_at")
+        .eq("is_published", true)
+        .eq("is_featured", false)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : { data: null };
 
   return (
     <div>
@@ -231,68 +249,102 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Products Preview Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-4">
-            <div className="decorative-line" />
-            <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
-              The Shop
-            </h2>
+      {/* Promoted Projects Section */}
+      {sections.projects && promotedProjects && promotedProjects.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-4">
+              <div className="decorative-line" />
+              <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+                Featured Projects
+              </h2>
+            </div>
+            <Link
+              href="/projects"
+              className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1.5 link-underline transition-colors"
+            >
+              View all
+              <ArrowRight size={14} />
+            </Link>
           </div>
-          <Link
-            href="/products"
-            className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1.5 link-underline transition-colors"
-          >
-            View all
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-        {recentProducts && recentProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {promotedProjects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/projects/${project.slug}`}
+                className="group"
+              >
+                {project.cover_image_url ? (
+                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-5 image-hover">
+                    <Image
+                      src={project.cover_image_url}
+                      alt={project.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[4/3] rounded-xl bg-background-alt flex items-center justify-center mb-5 image-hover border border-border">
+                    <span className="font-serif text-foreground-muted/10 text-6xl italic">SN</span>
+                  </div>
+                )}
+                <h3 className="font-serif text-xl font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-snug">
+                  {project.title}
+                </h3>
+                {project.description && (
+                  <p className="text-sm text-foreground-muted mt-2 line-clamp-2 leading-relaxed">
+                    {project.description}
+                  </p>
+                )}
+                <span className="inline-flex items-center gap-1 text-sm text-sage font-medium mt-3 link-underline">
+                  Explore
+                  <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Shop Preview */}
+      {sections.products && recentProducts && recentProducts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-4">
+              <div className="decorative-line" />
+              <h2 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+                The Shop
+              </h2>
+            </div>
+            <Link href="/products" className="text-sage hover:text-sage-dark font-medium text-sm flex items-center gap-1.5 link-underline transition-colors">
+              View all<ArrowRight size={14} />
+            </Link>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {recentProducts.map((product) => {
               const firstImage = (product.images as (string | ImageWithFocus)[])?.[0];
               return (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.slug}`}
-                  className="group"
-                >
+                <Link key={product.id} href={`/products/${product.slug}`} className="group">
                   {firstImage ? (
                     <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
                       <FocusImage image={firstImage} alt={product.name} />
                     </div>
                   ) : (
                     <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
-                      <span className="font-serif text-foreground-muted/10 text-6xl italic">
-                        SN
-                      </span>
+                      <span className="font-serif text-foreground-muted/10 text-6xl italic">SN</span>
                     </div>
                   )}
-                  <h3 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-foreground-muted mt-1">
-                    {formatPrice(product.price_cents)}
-                  </p>
+                  <h3 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">{product.name}</h3>
+                  <p className="text-sm text-foreground-muted mt-1">{formatPrice(product.price_cents)}</p>
                 </Link>
               );
             })}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="text-center">
-                <div className="aspect-[3/4] bg-background-alt rounded-xl mb-4 border border-border/50" />
-                <p className="text-foreground-muted text-sm">Coming soon</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Guides Section */}
-      <section className="bg-sage/[0.04]">
+      {sections.guides && <section className="bg-sage/[0.04]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
           <div className="max-w-2xl mx-auto text-center mb-12">
             <div className="decorative-line mx-auto mb-6" />
@@ -313,7 +365,7 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Newsletter Section */}
       <section className="relative overflow-hidden">

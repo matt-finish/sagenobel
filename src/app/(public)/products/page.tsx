@@ -94,33 +94,43 @@ export default async function ProductsPage(props: {
               >
                 <div className="relative">
                   {firstImage ? (
-                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
-                      <FocusImage image={firstImage} alt={product.name} />
-                    </div>
+                    isAffiliate ? (
+                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 product-card-hover product-image-frame border border-border/40">
+                        <div className="absolute inset-0 p-5 sm:p-7">
+                          <div className="relative w-full h-full">
+                            <FocusImage image={firstImage} alt={product.name} className="object-contain product-image-warm" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
+                        <FocusImage image={firstImage} alt={product.name} />
+                      </div>
+                    )
                   ) : (
                     <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-3 image-hover border border-border">
                       <span className="font-serif text-foreground-muted/10 text-5xl italic">SN</span>
                     </div>
                   )}
                   {isAffiliate && (
-                    <span className="absolute top-3 left-3 text-[10px] font-medium bg-white/90 backdrop-blur-sm text-foreground-muted px-2 py-1 rounded-full flex items-center gap-1">
-                      <ExternalLink size={10} />
+                    <span className="absolute top-2.5 left-2.5 text-[9px] font-medium uppercase tracking-[0.12em] bg-foreground/[0.06] backdrop-blur-sm text-foreground-muted/70 px-2.5 py-1 rounded-md flex items-center gap-1">
+                      <ExternalLink size={9} />
                       Amazon
                     </span>
                   )}
                 </div>
-                <h2 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">
+                <h2 className="font-serif text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-snug">
                   {product.name}
                 </h2>
                 {product.description && (
-                  <p className="text-sm text-foreground-muted mt-1 line-clamp-2">
+                  <p className="text-xs text-foreground-muted mt-1 line-clamp-2 leading-relaxed">
                     {product.description}
                   </p>
                 )}
-                <p className="text-sm text-foreground-muted mt-1">
+                <p className="mt-1">
                   {isAffiliate ? (
-                    <span className="text-sage flex items-center gap-1">Shop on Amazon <ExternalLink size={12} /></span>
-                  ) : product.price_cents ? formatPrice(product.price_cents) : "—"}
+                    <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-sage flex items-center gap-1 link-underline">Shop on Amazon <ExternalLink size={9} /></span>
+                  ) : product.price_cents ? <span className="text-xs text-foreground-muted">{formatPrice(product.price_cents)}</span> : null}
                 </p>
               </Link>
             );

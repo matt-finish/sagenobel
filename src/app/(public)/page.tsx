@@ -37,7 +37,7 @@ export default async function HomePage() {
   const { data: recentProducts } = sections.products
     ? await supabase
         .from("products")
-        .select("id, name, slug, price_cents, images")
+        .select("id, name, slug, price_cents, images, product_type, affiliate_url")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(4)
@@ -343,19 +343,33 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {recentProducts.map((product) => {
               const firstImage = (product.images as (string | ImageWithFocus)[])?.[0];
+              const isAffiliate = product.product_type === "affiliate";
+              const href = isAffiliate ? product.affiliate_url || "#" : `/products/${product.slug}`;
               return (
-                <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                <Link key={product.id} href={href} {...(isAffiliate ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="group">
                   {firstImage ? (
-                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
-                      <FocusImage image={firstImage} alt={product.name} />
-                    </div>
+                    isAffiliate ? (
+                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 product-card-hover product-image-frame border border-border/40">
+                        <div className="absolute inset-0 p-5 sm:p-6">
+                          <div className="relative w-full h-full">
+                            <FocusImage image={firstImage} alt={product.name} className="object-contain product-image-warm" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
+                        <FocusImage image={firstImage} alt={product.name} />
+                      </div>
+                    )
                   ) : (
                     <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-3 image-hover border border-border">
                       <span className="font-serif text-foreground-muted/10 text-5xl italic">SN</span>
                     </div>
                   )}
-                  <h3 className="text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300">{product.name}</h3>
-                  <p className="text-xs text-foreground-muted mt-0.5">{formatPrice(product.price_cents)}</p>
+                  <h3 className="font-serif text-sm font-medium text-foreground group-hover:text-sage transition-colors duration-300 leading-snug">{product.name}</h3>
+                  <p className="text-xs text-foreground-muted mt-0.5">
+                    {isAffiliate ? <span className="text-[10px] uppercase tracking-[0.12em] text-sage">Shop on Amazon</span> : product.price_cents ? formatPrice(product.price_cents) : null}
+                  </p>
                 </Link>
               );
             })}

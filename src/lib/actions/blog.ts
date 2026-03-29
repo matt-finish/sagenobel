@@ -17,6 +17,8 @@ export async function createBlogPost(formData: FormData) {
   const content = formData.get("content") as string;
   const excerpt = formData.get("excerpt") as string;
   const coverImageUrl = formData.get("cover_image_url") as string;
+  const coverImageFocalRaw = formData.get("cover_image_focal") as string;
+  const coverImageFocal = coverImageFocalRaw ? JSON.parse(coverImageFocalRaw) : null;
   const isPublished = formData.get("is_published") === "true";
   const isFeatured = formData.get("is_featured") === "true";
 
@@ -28,6 +30,7 @@ export async function createBlogPost(formData: FormData) {
     content: content ? JSON.parse(content) : {},
     excerpt,
     cover_image_url: coverImageUrl || null,
+    cover_image_focal: coverImageFocal,
     is_published: isPublished,
     is_featured: isFeatured,
     author_id: user.id,
@@ -57,6 +60,8 @@ export async function updateBlogPost(id: string, formData: FormData) {
   const content = formData.get("content") as string;
   const excerpt = formData.get("excerpt") as string;
   const coverImageUrl = formData.get("cover_image_url") as string;
+  const coverImageFocalRaw = formData.get("cover_image_focal") as string;
+  const coverImageFocal = coverImageFocalRaw ? JSON.parse(coverImageFocalRaw) : null;
   const isPublished = formData.get("is_published") === "true";
   const isFeatured = formData.get("is_featured") === "true";
 
@@ -70,6 +75,7 @@ export async function updateBlogPost(id: string, formData: FormData) {
       content: content ? JSON.parse(content) : {},
       excerpt,
       cover_image_url: coverImageUrl || null,
+      cover_image_focal: coverImageFocal,
       is_published: isPublished,
       is_featured: isFeatured,
     })

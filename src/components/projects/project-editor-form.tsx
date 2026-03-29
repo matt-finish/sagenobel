@@ -4,9 +4,11 @@ import { useState, useRef } from "react";
 import { createProject, updateProject } from "@/lib/actions/projects";
 import { ImageUpload } from "@/components/shared/image-upload";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Upload, Loader2, GripVertical } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2, GripVertical, Crosshair } from "lucide-react";
 import Image from "next/image";
+import { FocalPointPicker } from "@/components/shared/focal-point-picker";
 
+interface ImageValue { url: string; focalX?: number; focalY?: number }
 interface ProductLink { label: string; url: string }
 interface FormField { id: string; label: string; type: string; required: boolean; options: string[] }
 
@@ -15,7 +17,8 @@ interface Project {
   title: string;
   description: string | null;
   cover_image_url: string | null;
-  gallery_images: string[];
+  cover_image_focal: { focalX: number; focalY: number } | null;
+  gallery_images: (string | ImageValue)[];
   video_urls: string[];
   product_links: ProductLink[];
   guide_ids: string[];
@@ -35,9 +38,20 @@ interface Guide {
   title: string;
 }
 
+function normalizeGallery(images: (string | ImageValue)[]): ImageValue[] {
+  return images.map((img) =>
+    typeof img === "string" ? { url: img, focalX: 50, focalY: 50 } : { url: img.url, focalX: img.focalX ?? 50, focalY: img.focalY ?? 50 }
+  );
+}
+
 export function ProjectEditorForm({ project, guides }: { project?: Project; guides: Guide[] }) {
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(project?.cover_image_url || null);
-  const [galleryImages, setGalleryImages] = useState<string[]>(project?.gallery_images || []);
+  const [coverImage, setCoverImage] = useState<ImageValue | null>(
+    project?.cover_image_url
+      ? { url: project.cover_image_url, focalX: project?.cover_image_focal?.focalX ?? 50, focalY: project?.cover_image_focal?.focalY ?? 50 }
+      : null
+  );
+  const [galleryImages, setGalleryImages] = useState<ImageValue[]>(normalizeGallery(project?.gallery_images || []));
+  const [editingGalleryFocal, setEditingGalleryFocal] = useState<number | null>(null);
   const [videoUrls, setVideoUrls] = useState<string[]>(project?.video_urls || []);
   const [productLinks, setProductLinks] = useState<ProductLink[]>(project?.product_links || []);
   const [selectedGuides, setSelectedGuides] = useState<string[]>(project?.guide_ids || []);
@@ -67,7 +81,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
       const { error } = await supabase.storage.from("site-assets").upload(path, file);
       if (!error) {
         const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-        setGalleryImages(prev => [...prev, data.publicUrl]);
+        setGalleryImages(prev => [...prev, { url: data.publicUrl, focalX: 50, focalY: 50 }]);
       }
     }
     setUploading(false);
@@ -81,7 +95,8 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
     const payload = {
       title: formData.get("title") as string,
       description: formData.get("description") as string,
-      cover_image_url: coverImageUrl,
+      cover_image_url: coverImage?.url || null,
+      cover_image_focal: coverImage ? { focalX: coverImage.focalX ?? 50, focalY: coverImage.focalY ?? 50 } : null,
       gallery_images: galleryImages,
       video_urls: videoUrls,
       product_links: productLinks,
@@ -135,7 +150,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
             className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
             placeholder="Project description..." />
         </div>
-        <ImageUpload bucket="site-assets" value={coverImageUrl} onChange={setCoverImageUrl} label="Cover Image" />
+        <ImageUpload bucket="site-assets" value={coverImage} onChange={setCoverImage} label="Cover Image" />
       </section>
 
       {/* Section Visibility */}
@@ -158,15 +173,40 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
           <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Image Gallery</h3>
           {galleryImages.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-              {galleryImages.map((url, i) => (
+              {galleryImages.map((img, i) => (
                 <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
-                  <Image src={url} alt={`Gallery ${i + 1}`} fill className="object-cover" />
-                  <button type="button" onClick={() => setGalleryImages(galleryImages.filter((_, j) => j !== i))}
-                    className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 size={12} />
-                  </button>
+                  <Image src={img.url} alt={`Gallery ${i + 1}`} fill className="object-cover"
+                    style={{ objectPosition: `${img.focalX}% ${img.focalY}%` }} />
+                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" onClick={() => setEditingGalleryFocal(editingGalleryFocal === i ? null : i)}
+                      className="p-1 bg-black/60 rounded-full text-white" title="Set focal point">
+                      <Crosshair size={12} />
+                    </button>
+                    <button type="button" onClick={() => { setGalleryImages(galleryImages.filter((_, j) => j !== i)); if (editingGalleryFocal === i) setEditingGalleryFocal(null); }}
+                      className="p-1 bg-black/60 rounded-full text-white">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
               ))}
+            </div>
+          )}
+          {editingGalleryFocal !== null && galleryImages[editingGalleryFocal] && (
+            <div className="border border-sage/30 rounded-xl p-4 bg-sage/5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-foreground">Set Focal Point — Image {editingGalleryFocal + 1}</p>
+                <button type="button" onClick={() => setEditingGalleryFocal(null)} className="text-xs text-foreground-muted hover:text-foreground">Done</button>
+              </div>
+              <FocalPointPicker
+                src={galleryImages[editingGalleryFocal].url}
+                focalX={galleryImages[editingGalleryFocal].focalX ?? 50}
+                focalY={galleryImages[editingGalleryFocal].focalY ?? 50}
+                onChange={(x, y) => {
+                  const updated = [...galleryImages];
+                  updated[editingGalleryFocal] = { ...updated[editingGalleryFocal], focalX: x, focalY: y };
+                  setGalleryImages(updated);
+                }}
+              />
             </div>
           )}
           <input ref={galleryInputRef} type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />

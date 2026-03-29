@@ -2,19 +2,35 @@
 
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Upload, Trash2, Loader2 } from "lucide-react";
+import { Upload, Trash2, Loader2, Crosshair } from "lucide-react";
 import Image from "next/image";
+import { FocalPointPicker } from "@/components/shared/focal-point-picker";
+
+interface ImageUploadValue {
+  url: string;
+  focalX?: number;
+  focalY?: number;
+}
 
 interface ImageUploadProps {
   bucket: string;
-  value: string | null;
-  onChange: (url: string | null) => void;
+  value: string | ImageUploadValue | null;
+  onChange: (value: ImageUploadValue | null) => void;
   label: string;
+}
+
+function normalize(value: string | ImageUploadValue | null): ImageUploadValue | null {
+  if (!value) return null;
+  if (typeof value === "string") return { url: value, focalX: 50, focalY: 50 };
+  return { url: value.url, focalX: value.focalX ?? 50, focalY: value.focalY ?? 50 };
 }
 
 export function ImageUpload({ bucket, value, onChange, label }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [showFocal, setShowFocal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const normalized = normalize(value);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -37,7 +53,7 @@ export function ImageUpload({ bucket, value, onChange, label }: ImageUploadProps
     }
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
-    onChange(data.publicUrl);
+    onChange({ url: data.publicUrl, focalX: 50, focalY: 50 });
     setUploading(false);
 
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -48,18 +64,58 @@ export function ImageUpload({ bucket, value, onChange, label }: ImageUploadProps
       <label className="block text-sm font-medium text-foreground mb-1">
         {label}
       </label>
-      {value ? (
-        <div className="relative inline-block group">
-          <div className="relative w-48 h-32 rounded-lg overflow-hidden border border-border">
-            <Image src={value} alt={label} fill className="object-cover" />
+      {normalized ? (
+        <div className="space-y-3">
+          <div className="relative inline-block group">
+            <div className="relative w-48 h-32 rounded-lg overflow-hidden border border-border">
+              <Image
+                src={normalized.url}
+                alt={label}
+                fill
+                className="object-cover"
+                style={{ objectPosition: `${normalized.focalX}% ${normalized.focalY}%` }}
+              />
+            </div>
+            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                type="button"
+                onClick={() => setShowFocal(!showFocal)}
+                className="p-1 bg-black/60 rounded-full text-white"
+                title="Set focal point"
+              >
+                <Crosshair size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => { onChange(null); setShowFocal(false); }}
+                className="p-1 bg-black/60 rounded-full text-white"
+                title="Remove image"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Trash2 size={14} />
-          </button>
+
+          {showFocal && (
+            <div className="border border-sage/30 rounded-xl p-4 bg-sage/5 max-w-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-foreground">Set Focal Point</p>
+                <button
+                  type="button"
+                  onClick={() => setShowFocal(false)}
+                  className="text-xs text-foreground-muted hover:text-foreground"
+                >
+                  Done
+                </button>
+              </div>
+              <FocalPointPicker
+                src={normalized.url}
+                focalX={normalized.focalX!}
+                focalY={normalized.focalY!}
+                onChange={(x, y) => onChange({ ...normalized, focalX: x, focalY: y })}
+              />
+            </div>
+          )}
         </div>
       ) : (
         <div>

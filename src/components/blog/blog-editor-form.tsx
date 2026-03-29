@@ -11,15 +11,30 @@ interface BlogPost {
   content: unknown;
   excerpt: string | null;
   cover_image_url: string | null;
+  cover_image_focal: { focalX: number; focalY: number } | null;
   is_published: boolean;
   is_featured: boolean;
+}
+
+interface ImageValue {
+  url: string;
+  focalX?: number;
+  focalY?: number;
 }
 
 export function BlogEditorForm({ post }: { post?: BlogPost }) {
   const [content, setContent] = useState(
     post?.content ? JSON.stringify(post.content) : ""
   );
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(post?.cover_image_url || null);
+  const [coverImage, setCoverImage] = useState<ImageValue | null>(
+    post?.cover_image_url
+      ? {
+          url: post.cover_image_url,
+          focalX: post?.cover_image_focal?.focalX ?? 50,
+          focalY: post?.cover_image_focal?.focalY ?? 50,
+        }
+      : null
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -28,7 +43,8 @@ export function BlogEditorForm({ post }: { post?: BlogPost }) {
     setError(null);
 
     formData.set("content", content);
-    formData.set("cover_image_url", coverImageUrl || "");
+    formData.set("cover_image_url", coverImage?.url || "");
+    formData.set("cover_image_focal", coverImage ? JSON.stringify({ focalX: coverImage.focalX, focalY: coverImage.focalY }) : "");
 
     const result = post
       ? await updateBlogPost(post.id, formData)
@@ -49,89 +65,55 @@ export function BlogEditorForm({ post }: { post?: BlogPost }) {
       )}
 
       <div>
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-foreground mb-1"
-        >
+        <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
           Title
         </label>
-        <input
-          id="title"
-          name="title"
-          type="text"
-          required
-          defaultValue={post?.title}
+        <input id="title" name="title" type="text" required defaultValue={post?.title}
           className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          placeholder="Post title"
-        />
+          placeholder="Post title" />
       </div>
 
       <div>
-        <label
-          htmlFor="excerpt"
-          className="block text-sm font-medium text-foreground mb-1"
-        >
+        <label htmlFor="excerpt" className="block text-sm font-medium text-foreground mb-1">
           Excerpt
         </label>
-        <textarea
-          id="excerpt"
-          name="excerpt"
-          rows={2}
-          defaultValue={post?.excerpt || ""}
+        <textarea id="excerpt" name="excerpt" rows={2} defaultValue={post?.excerpt || ""}
           className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
-          placeholder="Brief description for listings..."
-        />
+          placeholder="Brief description for listings..." />
       </div>
 
       <ImageUpload
         bucket="blog-images"
-        value={coverImageUrl}
-        onChange={setCoverImageUrl}
+        value={coverImage}
+        onChange={setCoverImage}
         label="Cover Image"
       />
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          Content
-        </label>
+        <label className="block text-sm font-medium text-foreground mb-1">Content</label>
         <TiptapEditor content={content} onChange={setContent} />
       </div>
 
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            name="is_published"
-            value="true"
-            defaultChecked={post?.is_published}
-            className="rounded border-border text-sage focus:ring-sage"
-          />
+          <input type="checkbox" name="is_published" value="true" defaultChecked={post?.is_published}
+            className="rounded border-border text-sage focus:ring-sage" />
           <span className="text-sm text-foreground">Published</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            name="is_featured"
-            value="true"
-            defaultChecked={post?.is_featured}
-            className="rounded border-border text-sage focus:ring-sage"
-          />
+          <input type="checkbox" name="is_featured" value="true" defaultChecked={post?.is_featured}
+            className="rounded border-border text-sage focus:ring-sage" />
           <span className="text-sm text-foreground">Featured</span>
         </label>
       </div>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-lg bg-sage px-6 py-2.5 text-white font-medium hover:bg-sage-dark transition-colors disabled:opacity-50"
-        >
+        <button type="submit" disabled={saving}
+          className="rounded-lg bg-sage px-6 py-2.5 text-white font-medium hover:bg-sage-dark transition-colors disabled:opacity-50">
           {saving ? "Saving..." : post ? "Update Post" : "Create Post"}
         </button>
-        <a
-          href="/dashboard/blog-manager"
-          className="rounded-lg border border-border px-6 py-2.5 text-foreground font-medium hover:bg-background-alt transition-colors"
-        >
+        <a href="/dashboard/blog-manager"
+          className="rounded-lg border border-border px-6 py-2.5 text-foreground font-medium hover:bg-background-alt transition-colors">
           Cancel
         </a>
       </div>

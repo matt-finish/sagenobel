@@ -17,7 +17,7 @@ export default async function SearchPage(props: {
   const sections = await getSectionSettings();
   const supabase = await createClient();
 
-  type Result = { type: string; id: string; title: string; slug: string; description?: string | null; image?: string | ImageWithFocus | null; price_cents?: number };
+  type Result = { type: string; id: string; title: string; slug: string; description?: string | null; image?: string | ImageWithFocus | null; price_cents?: number; tags?: string[] };
   const results: Result[] = [];
 
   if (query) {
@@ -33,37 +33,74 @@ export default async function SearchPage(props: {
       posts?.forEach((p) => results.push({ type: "blog", id: p.id, title: p.title, slug: p.slug, description: p.excerpt, image: p.cover_image_url }));
     }
 
+    const searchTerm = query.toLowerCase().trim();
+
     if (sections.products) {
       const { data: products } = await supabase
         .from("products")
-        .select("id, name, slug, description, images, price_cents")
+        .select("id, name, slug, description, images, price_cents, tags")
         .eq("is_active", true)
         .or(`name.ilike.${q},description.ilike.${q}`)
         .limit(10);
       products?.forEach((p) => {
         const imgs = p.images as (string | ImageWithFocus)[];
-        results.push({ type: "product", id: p.id, title: p.name, slug: p.slug, description: p.description, image: imgs?.[0], price_cents: p.price_cents });
+        results.push({ type: "product", id: p.id, title: p.name, slug: p.slug, description: p.description, image: imgs?.[0], price_cents: p.price_cents, tags: p.tags as string[] });
+      });
+      // Also search by exact tag match
+      const { data: tagProducts } = await supabase
+        .from("products")
+        .select("id, name, slug, description, images, price_cents, tags")
+        .eq("is_active", true)
+        .contains("tags", [searchTerm])
+        .limit(10);
+      tagProducts?.forEach((p) => {
+        if (!results.some((r) => r.type === "product" && r.id === p.id)) {
+          const imgs = p.images as (string | ImageWithFocus)[];
+          results.push({ type: "product", id: p.id, title: p.name, slug: p.slug, description: p.description, image: imgs?.[0], price_cents: p.price_cents, tags: p.tags as string[] });
+        }
       });
     }
 
     if (sections.projects) {
       const { data: projects } = await supabase
         .from("projects")
-        .select("id, title, slug, description, cover_image_url")
+        .select("id, title, slug, description, cover_image_url, tags")
         .eq("is_published", true)
         .or(`title.ilike.${q},description.ilike.${q}`)
         .limit(10);
-      projects?.forEach((p) => results.push({ type: "project", id: p.id, title: p.title, slug: p.slug, description: p.description, image: p.cover_image_url }));
+      projects?.forEach((p) => results.push({ type: "project", id: p.id, title: p.title, slug: p.slug, description: p.description, image: p.cover_image_url, tags: p.tags as string[] }));
+      const { data: tagProjects } = await supabase
+        .from("projects")
+        .select("id, title, slug, description, cover_image_url, tags")
+        .eq("is_published", true)
+        .contains("tags", [searchTerm])
+        .limit(10);
+      tagProjects?.forEach((p) => {
+        if (!results.some((r) => r.type === "project" && r.id === p.id)) {
+          results.push({ type: "project", id: p.id, title: p.title, slug: p.slug, description: p.description, image: p.cover_image_url, tags: p.tags as string[] });
+        }
+      });
     }
 
     if (sections.guides) {
       const { data: guides } = await supabase
         .from("free_guides")
-        .select("id, title, slug, description, cover_image_url")
+        .select("id, title, slug, description, cover_image_url, tags")
         .eq("is_published", true)
         .or(`title.ilike.${q},description.ilike.${q}`)
         .limit(10);
-      guides?.forEach((g) => results.push({ type: "guide", id: g.id, title: g.title, slug: g.slug, description: g.description, image: g.cover_image_url }));
+      guides?.forEach((g) => results.push({ type: "guide", id: g.id, title: g.title, slug: g.slug, description: g.description, image: g.cover_image_url, tags: g.tags as string[] }));
+      const { data: tagGuides } = await supabase
+        .from("free_guides")
+        .select("id, title, slug, description, cover_image_url, tags")
+        .eq("is_published", true)
+        .contains("tags", [searchTerm])
+        .limit(10);
+      tagGuides?.forEach((g) => {
+        if (!results.some((r) => r.type === "guide" && r.id === g.id)) {
+          results.push({ type: "guide", id: g.id, title: g.title, slug: g.slug, description: g.description, image: g.cover_image_url, tags: g.tags as string[] });
+        }
+      });
     }
   }
 
@@ -142,6 +179,13 @@ export default async function SearchPage(props: {
                   )}
                   {result.price_cents !== undefined && (
                     <p className="text-sm text-sage font-medium mt-0.5">{formatPrice(result.price_cents)}</p>
+                  )}
+                  {result.tags && result.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {result.tags.slice(0, 4).map((tag) => (
+                        <span key={tag} className="text-[10px] bg-sage/10 text-sage px-1.5 py-0.5 rounded-full">{tag}</span>
+                      ))}
+                    </div>
                   )}
                 </div>
               </Link>

@@ -18,16 +18,35 @@ export default async function GuidesPage(props: {
   const query = searchParams.q || "";
   const supabase = await createClient();
 
+  const searchTerm = query.toLowerCase().trim();
+
   let dbQuery = supabase
     .from("free_guides")
-    .select("id, title, slug, description, cover_image_url, guide_type")
+    .select("id, title, slug, description, cover_image_url, guide_type, tags")
     .eq("is_published", true);
 
   if (query) {
     dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
   }
 
-  const { data: guides } = await dbQuery.order("created_at", { ascending: false });
+  const { data: nameResults } = await dbQuery.order("created_at", { ascending: false });
+
+  let tagResults: typeof nameResults = [];
+  if (searchTerm) {
+    const { data } = await supabase
+      .from("free_guides")
+      .select("id, title, slug, description, cover_image_url, guide_type, tags")
+      .eq("is_published", true)
+      .contains("tags", [searchTerm]);
+    tagResults = data || [];
+  }
+
+  const seen = new Set<string>();
+  const guides = [...(nameResults || []), ...tagResults].filter((g) => {
+    if (seen.has(g.id)) return false;
+    seen.add(g.id);
+    return true;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">

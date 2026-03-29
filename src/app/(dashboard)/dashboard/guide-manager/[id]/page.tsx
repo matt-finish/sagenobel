@@ -15,7 +15,7 @@ export default async function EditGuidePage(
 
   const { data: guide } = await supabase
     .from("free_guides")
-    .select("id, title, description, cover_image_url, cover_image_focal, guide_type, file_url, content, is_published")
+    .select("id, title, description, cover_image_url, cover_image_focal, guide_type, file_url, content, is_published, tags")
     .eq("id", id)
     .single();
 

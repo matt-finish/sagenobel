@@ -6,6 +6,7 @@ import { Plus, Trash2, Upload, Loader2, Crosshair } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import { FocalPointPicker } from "@/components/shared/focal-point-picker";
+import { TagsInput } from "@/components/shared/tags-input";
 import type { ImageWithFocus } from "@/components/shared/focus-image";
 
 interface PricingOption {
@@ -32,6 +33,7 @@ interface Product {
   is_active: boolean;
   product_type: "custom" | "affiliate";
   affiliate_url: string | null;
+  tags: string[];
 }
 
 function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] {
@@ -49,6 +51,7 @@ export function ProductEditorForm({ product }: { product?: Product }) {
   const [customFields, setCustomFields] = useState<CustomField[]>(
     product?.custom_fields || []
   );
+  const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -142,6 +145,7 @@ export function ProductEditorForm({ product }: { product?: Product }) {
     formData.set("images", JSON.stringify(images));
     formData.set("custom_fields", JSON.stringify(customFields));
     formData.set("product_type", productType);
+    formData.set("tags", JSON.stringify(tags));
 
     const result = product
       ? await updateProduct(product.id, formData)
@@ -347,6 +351,8 @@ export function ProductEditorForm({ product }: { product?: Product }) {
           ))}
         </div>
       </div>
+
+      <TagsInput value={tags} onChange={setTags} label="Tags" />
 
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" name="is_active" value="true" defaultChecked={product?.is_active ?? true}

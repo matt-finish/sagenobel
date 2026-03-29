@@ -5,6 +5,7 @@ import { createGuide, updateGuide } from "@/lib/actions/guides";
 import { TiptapEditor } from "@/components/blog/tiptap-editor";
 import { ImageUpload } from "@/components/shared/image-upload";
 import { FileUpload } from "@/components/shared/file-upload";
+import { TagsInput } from "@/components/shared/tags-input";
 
 interface ImageValue {
   url: string;
@@ -22,6 +23,7 @@ interface Guide {
   file_url: string | null;
   content: unknown;
   is_published: boolean;
+  tags: string[];
 }
 
 export function GuideEditorForm({ guide }: { guide?: Guide }) {
@@ -35,6 +37,7 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
   const [content, setContent] = useState(
     guide?.content ? JSON.stringify(guide.content) : ""
   );
+  const [tags, setTags] = useState<string[]>(guide?.tags || []);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -46,6 +49,7 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
     formData.set("cover_image_url", coverImage?.url || "");
     formData.set("cover_image_focal", coverImage ? JSON.stringify({ focalX: coverImage.focalX, focalY: coverImage.focalY }) : "");
     formData.set("file_url", fileUrl || "");
+    formData.set("tags", JSON.stringify(tags));
     if (guideType === "article") {
       formData.set("content", content);
     }
@@ -107,6 +111,8 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
           <TiptapEditor content={content} onChange={setContent} />
         </div>
       )}
+
+      <TagsInput value={tags} onChange={setTags} label="Tags" />
 
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" name="is_published" value="true" defaultChecked={guide?.is_published}

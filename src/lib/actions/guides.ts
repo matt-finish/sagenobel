@@ -18,6 +18,7 @@ export async function createGuide(formData: FormData) {
   const guideType = formData.get("guide_type") as string;
   const fileUrl = formData.get("file_url") as string;
   const content = formData.get("content") as string;
+  const tags = formData.get("tags") as string;
   const isPublished = formData.get("is_published") === "true";
 
   const slug = slugify(title);
@@ -31,6 +32,7 @@ export async function createGuide(formData: FormData) {
     guide_type: guideType,
     file_url: guideType === "download" ? fileUrl || null : null,
     content: guideType === "article" && content ? JSON.parse(content) : null,
+    tags: tags ? JSON.parse(tags) : [],
     is_published: isPublished,
   });
 
@@ -58,6 +60,7 @@ export async function updateGuide(id: string, formData: FormData) {
   const guideType = formData.get("guide_type") as string;
   const fileUrl = formData.get("file_url") as string;
   const content = formData.get("content") as string;
+  const tags = formData.get("tags") as string;
   const isPublished = formData.get("is_published") === "true";
 
   const slug = slugify(title);
@@ -73,6 +76,7 @@ export async function updateGuide(id: string, formData: FormData) {
       guide_type: guideType,
       file_url: guideType === "download" ? fileUrl || null : null,
       content: guideType === "article" && content ? JSON.parse(content) : null,
+      tags: tags ? JSON.parse(tags) : [],
       is_published: isPublished,
     })
     .eq("id", id);

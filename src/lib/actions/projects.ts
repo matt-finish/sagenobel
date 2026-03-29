@@ -22,6 +22,7 @@ export async function createProject(data: {
   show_reviews: boolean;
   order_form_fields: { id: string; label: string; type: string; required: boolean; options: string[] }[];
   order_form_instructions: string;
+  tags: string[];
   is_published: boolean;
   is_promoted: boolean;
 }) {
@@ -62,6 +63,7 @@ export async function updateProject(id: string, data: {
   show_reviews: boolean;
   order_form_fields: { id: string; label: string; type: string; required: boolean; options: string[] }[];
   order_form_instructions: string;
+  tags: string[];
   is_published: boolean;
   is_promoted: boolean;
 }) {

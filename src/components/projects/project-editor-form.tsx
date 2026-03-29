@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Upload, Loader2, GripVertical, Crosshair } from "lucide-react";
 import Image from "next/image";
 import { FocalPointPicker } from "@/components/shared/focal-point-picker";
+import { TagsInput } from "@/components/shared/tags-input";
 
 interface ImageValue { url: string; focalX?: number; focalY?: number }
 interface ProductLink { label: string; url: string }
@@ -32,6 +33,7 @@ interface Project {
   order_form_instructions: string | null;
   is_published: boolean;
   is_promoted: boolean;
+  tags: string[];
 }
 
 interface Guide {
@@ -65,6 +67,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
   const [showOrderForm, setShowOrderForm] = useState(project?.show_order_form ?? false);
   const [showReviews, setShowReviews] = useState(project?.show_reviews ?? true);
 
+  const [tags, setTags] = useState<string[]>(project?.tags || []);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -110,6 +113,7 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
       show_reviews: showReviews,
       order_form_fields: orderFormFields,
       order_form_instructions: formData.get("order_form_instructions") as string,
+      tags,
       is_published: formData.get("is_published") === "true",
       is_promoted: formData.get("is_promoted") === "true",
     };
@@ -316,6 +320,8 @@ export function ProjectEditorForm({ project, guides }: { project?: Project; guid
             className="inline-flex items-center gap-1 text-xs text-sage hover:text-sage-dark font-medium"><Plus size={14} />Add Field</button>
         </section>
       )}
+
+      <TagsInput value={tags} onChange={setTags} label="Tags" />
 
       {/* Publish */}
       <div className="flex items-center gap-6">

@@ -19,16 +19,37 @@ export default async function ProductsPage(props: {
   const query = searchParams.q || "";
   const supabase = await createClient();
 
+  const searchTerm = query.toLowerCase().trim();
+
   let dbQuery = supabase
     .from("products")
-    .select("id, name, slug, price_cents, images, description, product_type, affiliate_url")
+    .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags")
     .eq("is_active", true);
 
   if (query) {
     dbQuery = dbQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
   }
 
-  const { data: products } = await dbQuery.order("created_at", { ascending: false });
+  const { data: nameResults } = await dbQuery.order("created_at", { ascending: false });
+
+  // Also search by tag
+  let tagResults: typeof nameResults = [];
+  if (searchTerm) {
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, slug, price_cents, images, description, product_type, affiliate_url, tags")
+      .eq("is_active", true)
+      .contains("tags", [searchTerm]);
+    tagResults = data || [];
+  }
+
+  // Merge and deduplicate
+  const seen = new Set<string>();
+  const products = [...(nameResults || []), ...tagResults].filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">

@@ -88,12 +88,14 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right — Image grid */}
+            {/* Right — Image grid from promoted projects */}
             <div className="grid grid-cols-2 gap-3 animate-fade-in delay-200">
               <div className="space-y-3">
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {recentProducts?.[0]?.images?.[0] ? (
-                    <FocusImage image={(recentProducts[0].images as (string | ImageWithFocus)[])[0]} alt="" className="object-cover !relative" />
+                  {promotedProjects?.[0]?.cover_image_url ? (
+                    <Link href={`/projects/${promotedProjects[0].slug}`}>
+                      <Image src={promotedProjects[0].cover_image_url} alt={promotedProjects[0].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                    </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
@@ -106,8 +108,10 @@ export default async function HomePage() {
               </div>
               <div className="space-y-3 pt-6">
                 <div className="aspect-square rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {featuredPost?.cover_image_url ? (
-                    <Image src={featuredPost.cover_image_url} alt="" fill className="object-cover !relative" />
+                  {promotedProjects?.[1]?.cover_image_url ? (
+                    <Link href={`/projects/${promotedProjects[1].slug}`}>
+                      <Image src={promotedProjects[1].cover_image_url} alt={promotedProjects[1].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                    </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>
@@ -115,8 +119,10 @@ export default async function HomePage() {
                   )}
                 </div>
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {recentProducts?.[1]?.images?.[0] ? (
-                    <FocusImage image={(recentProducts[1].images as (string | ImageWithFocus)[])[0]} alt="" className="object-cover !relative" />
+                  {promotedProjects?.[2]?.cover_image_url ? (
+                    <Link href={`/projects/${promotedProjects[2].slug}`}>
+                      <Image src={promotedProjects[2].cover_image_url} alt={promotedProjects[2].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                    </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="font-serif text-foreground-muted/8 text-5xl italic">SN</span>

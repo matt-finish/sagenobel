@@ -35,7 +35,13 @@ interface Product {
   affiliate_url: string | null;
   disclaimer: string | null;
   show_disclaimer: boolean;
+  section_id: string | null;
   tags: string[];
+}
+
+interface ProductSection {
+  id: string;
+  title: string;
 }
 
 function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] {
@@ -44,7 +50,7 @@ function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] 
   );
 }
 
-export function ProductEditorForm({ product }: { product?: Product }) {
+export function ProductEditorForm({ product, sections = [] }: { product?: Product; sections?: ProductSection[] }) {
   const [productType, setProductType] = useState<"custom" | "affiliate">(product?.product_type || "custom");
   const [images, setImages] = useState<ImageWithFocus[]>(
     normalizeImages(product?.images || [])
@@ -229,6 +235,19 @@ export function ProductEditorForm({ product }: { product?: Product }) {
           className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
           placeholder="Product description..." />
       </div>
+
+      {sections.length > 0 && (
+        <div>
+          <label htmlFor="section_id" className="block text-sm font-medium text-foreground mb-1">Section</label>
+          <select id="section_id" name="section_id" defaultValue={product?.section_id || ""}
+            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage">
+            <option value="">No section (Uncategorized)</option>
+            {sections.map((s) => (
+              <option key={s.id} value={s.id}>{s.title}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Disclaimer */}
       <div>

@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { DeleteProductButton } from "@/components/products/delete-product-button";
 import { SortableList } from "@/components/shared/sortable-list";
+import { SectionManager } from "@/components/products/section-manager";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,9 +16,14 @@ export default async function ProductManagerPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, slug, price_cents, product_type, images, is_active, sort_order, created_at")
+    .select("id, name, slug, price_cents, product_type, images, is_active, sort_order, section_id, created_at")
     .order("sort_order")
     .order("created_at", { ascending: false });
+
+  const { data: sections } = await supabase
+    .from("product_sections")
+    .select("id, title, sort_order")
+    .order("sort_order");
 
   return (
     <div className="space-y-6">
@@ -89,6 +95,8 @@ export default async function ProductManagerPage() {
           </table>
         </div>
       )}
+
+      <SectionManager sections={(sections || []).map(s => ({ id: s.id, title: s.title }))} />
 
       {products && products.length > 1 && (
         <div className="bg-background rounded-xl border border-border p-6">

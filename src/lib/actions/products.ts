@@ -21,6 +21,7 @@ export async function createProduct(formData: FormData) {
   const tags = formData.get("tags") as string;
   const showDisclaimer = formData.get("show_disclaimer") === "true";
   const disclaimerText = formData.get("disclaimer") as string;
+  const sectionId = formData.get("section_id") as string;
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);
@@ -37,6 +38,7 @@ export async function createProduct(formData: FormData) {
     tags: tags ? JSON.parse(tags) : [],
     show_disclaimer: showDisclaimer,
     disclaimer: showDisclaimer ? disclaimerText || null : null,
+    section_id: sectionId || null,
     is_active: isActive,
   });
 
@@ -68,6 +70,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const tags = formData.get("tags") as string;
   const showDisclaimer = formData.get("show_disclaimer") === "true";
   const disclaimerText = formData.get("disclaimer") as string;
+  const sectionId = formData.get("section_id") as string;
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);

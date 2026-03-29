@@ -142,18 +142,27 @@ export default async function ProductPage(
                 Shop on Amazon
                 <ExternalLink size={16} />
               </a>
-              <p className="text-xs text-foreground-muted mt-2 text-center">
-                As an Amazon Associate, we may earn from qualifying purchases.
-              </p>
+              {product.show_disclaimer && product.disclaimer && (
+                <p className="text-[11px] text-foreground-muted mt-2 text-center leading-relaxed">
+                  {product.disclaimer}
+                </p>
+              )}
             </div>
           ) : (
-            <AddToCartButton
-              productId={product.id}
-              productName={product.name}
-              priceCents={product.price_cents || 0}
-              image={images[0] ? getImageUrl(images[0]) : undefined}
-              customFields={customFields}
-            />
+            <>
+              <AddToCartButton
+                productId={product.id}
+                productName={product.name}
+                priceCents={product.price_cents || 0}
+                image={images[0] ? getImageUrl(images[0]) : undefined}
+                customFields={customFields}
+              />
+              {product.show_disclaimer && product.disclaimer && (
+                <p className="text-[11px] text-foreground-muted mt-3 text-center leading-relaxed">
+                  {product.disclaimer}
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

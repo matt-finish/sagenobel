@@ -19,6 +19,8 @@ export async function createProduct(formData: FormData) {
   const images = formData.get("images") as string;
   const customFields = formData.get("custom_fields") as string;
   const tags = formData.get("tags") as string;
+  const showDisclaimer = formData.get("show_disclaimer") === "true";
+  const disclaimerText = formData.get("disclaimer") as string;
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);
@@ -33,6 +35,8 @@ export async function createProduct(formData: FormData) {
     images: images ? JSON.parse(images) : [],
     custom_fields: customFields ? JSON.parse(customFields) : [],
     tags: tags ? JSON.parse(tags) : [],
+    show_disclaimer: showDisclaimer,
+    disclaimer: showDisclaimer ? disclaimerText || null : null,
     is_active: isActive,
   });
 
@@ -62,6 +66,8 @@ export async function updateProduct(id: string, formData: FormData) {
   const images = formData.get("images") as string;
   const customFields = formData.get("custom_fields") as string;
   const tags = formData.get("tags") as string;
+  const showDisclaimer = formData.get("show_disclaimer") === "true";
+  const disclaimerText = formData.get("disclaimer") as string;
   const isActive = formData.get("is_active") === "true";
 
   const slug = slugify(name);
@@ -78,6 +84,8 @@ export async function updateProduct(id: string, formData: FormData) {
       images: images ? JSON.parse(images) : [],
       custom_fields: customFields ? JSON.parse(customFields) : [],
       tags: tags ? JSON.parse(tags) : [],
+      show_disclaimer: showDisclaimer,
+      disclaimer: showDisclaimer ? disclaimerText || null : null,
       is_active: isActive,
     })
     .eq("id", id);

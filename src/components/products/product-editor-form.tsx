@@ -33,6 +33,8 @@ interface Product {
   is_active: boolean;
   product_type: "custom" | "affiliate";
   affiliate_url: string | null;
+  disclaimer: string | null;
+  show_disclaimer: boolean;
   tags: string[];
 }
 
@@ -52,6 +54,10 @@ export function ProductEditorForm({ product }: { product?: Product }) {
     product?.custom_fields || []
   );
   const [tags, setTags] = useState<string[]>(product?.tags || []);
+  const [showDisclaimer, setShowDisclaimer] = useState(product?.show_disclaimer ?? false);
+  const [disclaimer, setDisclaimer] = useState(
+    product?.disclaimer ?? "As an Amazon Associate, we may earn from qualifying purchases."
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -146,6 +152,8 @@ export function ProductEditorForm({ product }: { product?: Product }) {
     formData.set("custom_fields", JSON.stringify(customFields));
     formData.set("product_type", productType);
     formData.set("tags", JSON.stringify(tags));
+    formData.set("show_disclaimer", showDisclaimer ? "true" : "false");
+    formData.set("disclaimer", showDisclaimer ? disclaimer : "");
 
     const result = product
       ? await updateProduct(product.id, formData)
@@ -220,6 +228,28 @@ export function ProductEditorForm({ product }: { product?: Product }) {
         <textarea id="description" name="description" rows={4} defaultValue={product?.description || ""}
           className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
           placeholder="Product description..." />
+      </div>
+
+      {/* Disclaimer */}
+      <div>
+        <label className="flex items-center gap-2 cursor-pointer mb-2">
+          <input
+            type="checkbox"
+            checked={showDisclaimer}
+            onChange={(e) => setShowDisclaimer(e.target.checked)}
+            className="rounded border-border text-sage focus:ring-sage"
+          />
+          <span className="text-sm font-medium text-foreground">Show Disclaimer</span>
+        </label>
+        {showDisclaimer && (
+          <textarea
+            value={disclaimer}
+            onChange={(e) => setDisclaimer(e.target.value)}
+            rows={2}
+            className="w-full rounded-lg border border-border bg-white px-4 py-2 text-xs text-foreground-muted placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
+            placeholder="Disclaimer text..."
+          />
+        )}
       </div>
 
       {/* Images */}

@@ -30,7 +30,7 @@ export default async function ProductsPage(props: {
     dbQuery = dbQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
   }
 
-  const { data: nameResults } = await dbQuery.order("created_at", { ascending: false });
+  const { data: nameResults } = await dbQuery.order("sort_order").order("created_at", { ascending: false });
 
   // Also search by tag
   let tagResults: typeof nameResults = [];

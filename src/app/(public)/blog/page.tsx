@@ -28,7 +28,7 @@ export default async function BlogPage(props: {
     dbQuery = dbQuery.or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`);
   }
 
-  dbQuery = dbQuery.order("created_at", {
+  dbQuery = dbQuery.order("sort_order").order("created_at", {
     ascending: sort === "oldest",
   });
 

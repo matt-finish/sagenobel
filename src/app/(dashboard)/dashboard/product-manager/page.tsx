@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { DeleteProductButton } from "@/components/products/delete-product-button";
+import { SortableList } from "@/components/shared/sortable-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export default async function ProductManagerPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, slug, price_cents, product_type, images, is_active, created_at")
+    .select("id, name, slug, price_cents, product_type, images, is_active, sort_order, created_at")
+    .order("sort_order")
     .order("created_at", { ascending: false });
 
   return (
@@ -85,6 +87,16 @@ export default async function ProductManagerPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {products && products.length > 1 && (
+        <div className="bg-background rounded-xl border border-border p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4">Reorder</h3>
+          <SortableList
+            table="products"
+            items={products.map((i) => ({ id: i.id, label: i.name, sublabel: formatPrice(i.price_cents) }))}
+          />
         </div>
       )}
     </div>

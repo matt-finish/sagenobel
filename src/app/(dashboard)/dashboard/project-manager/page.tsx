@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { SortableList } from "@/components/shared/sortable-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Project Manager" };
@@ -9,7 +10,8 @@ export default async function ProjectManagerPage() {
   const supabase = await createClient();
   const { data: projects } = await supabase
     .from("projects")
-    .select("id, title, slug, is_published, created_at")
+    .select("id, title, slug, is_published, sort_order, created_at")
+    .order("sort_order")
     .order("created_at", { ascending: false });
 
   return (
@@ -48,6 +50,16 @@ export default async function ProjectManagerPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {projects && projects.length > 1 && (
+        <div className="bg-background rounded-xl border border-border p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4">Reorder</h3>
+          <SortableList
+            table="projects"
+            items={projects.map((i) => ({ id: i.id, label: i.title }))}
+          />
         </div>
       )}
     </div>

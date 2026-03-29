@@ -27,7 +27,7 @@ export default async function ProjectsPage(props: {
     dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
   }
 
-  const { data: nameResults } = await dbQuery.order("created_at", { ascending: false });
+  const { data: nameResults } = await dbQuery.order("sort_order").order("created_at", { ascending: false });
 
   let tagResults: typeof nameResults = [];
   if (searchTerm) {

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus, FileDown, FileText } from "lucide-react";
+import { SortableList } from "@/components/shared/sortable-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,7 +13,8 @@ export default async function GuideManagerPage() {
 
   const { data: guides } = await supabase
     .from("free_guides")
-    .select("id, title, guide_type, is_published, download_count, created_at")
+    .select("id, title, guide_type, is_published, download_count, sort_order, created_at")
+    .order("sort_order")
     .order("created_at", { ascending: false });
 
   return (
@@ -79,6 +81,16 @@ export default async function GuideManagerPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {guides && guides.length > 1 && (
+        <div className="bg-background rounded-xl border border-border p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4">Reorder</h3>
+          <SortableList
+            table="free_guides"
+            items={guides.map((i) => ({ id: i.id, label: i.title, sublabel: i.guide_type }))}
+          />
         </div>
       )}
     </div>

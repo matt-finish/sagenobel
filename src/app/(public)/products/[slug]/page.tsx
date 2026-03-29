@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { AddToCartButton } from "@/components/products/add-to-cart-button";
 import { FocusImage, getImageUrl, type ImageWithFocus } from "@/components/shared/focus-image";
 import type { Metadata } from "next";
@@ -102,7 +102,12 @@ export default async function ProductPage(
           <h1 className="font-serif text-3xl font-medium text-foreground">
             {product.name}
           </h1>
-          {customFields.some((f) => f.type === "pricing_dropdown") ? (
+          {product.product_type === "affiliate" ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium bg-accent/10 text-accent-dark px-2.5 py-1 rounded-full mt-2">
+              <ExternalLink size={10} />
+              Available on Amazon
+            </span>
+          ) : customFields.some((f) => f.type === "pricing_dropdown") ? (
             <p className="text-xl text-foreground-muted mt-2">
               From{" "}
               <span className="text-sage font-medium">
@@ -115,24 +120,41 @@ export default async function ProductPage(
                 )}
               </span>
             </p>
-          ) : (
+          ) : product.price_cents ? (
             <p className="text-2xl text-sage font-medium mt-2">
               {formatPrice(product.price_cents)}
             </p>
-          )}
+          ) : null}
           {product.description && (
             <p className="text-foreground-muted mt-4 leading-relaxed">
               {product.description}
             </p>
           )}
 
-          <AddToCartButton
-            productId={product.id}
-            productName={product.name}
-            priceCents={product.price_cents}
-            image={images[0] ? getImageUrl(images[0]) : undefined}
-            customFields={customFields}
-          />
+          {product.product_type === "affiliate" && product.affiliate_url ? (
+            <div className="mt-6">
+              <a
+                href={product.affiliate_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-white font-medium hover:bg-accent-dark transition-colors"
+              >
+                Shop on Amazon
+                <ExternalLink size={16} />
+              </a>
+              <p className="text-xs text-foreground-muted mt-2 text-center">
+                As an Amazon Associate, we may earn from qualifying purchases.
+              </p>
+            </div>
+          ) : (
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name}
+              priceCents={product.price_cents || 0}
+              image={images[0] ? getImageUrl(images[0]) : undefined}
+              customFields={customFields}
+            />
+          )}
         </div>
       </div>
     </div>

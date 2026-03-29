@@ -14,7 +14,7 @@ export default async function ProductManagerPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, slug, price_cents, images, is_active, created_at")
+    .select("id, name, slug, price_cents, product_type, images, is_active, created_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -55,9 +55,16 @@ export default async function ProductManagerPage() {
               {products.map((product) => (
                 <tr key={product.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-foreground">{product.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{product.name}</span>
+                      {product.product_type === "affiliate" && (
+                        <span className="text-[10px] font-medium bg-accent/10 text-accent-dark px-1.5 py-0.5 rounded">Affiliate</span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-foreground">{formatPrice(product.price_cents)}</td>
+                  <td className="px-4 py-3 text-sm text-foreground">
+                    {product.product_type === "affiliate" ? "—" : product.price_cents ? formatPrice(product.price_cents) : "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-medium ${product.is_active ? "text-success" : "text-foreground-muted"}`}>
                       {product.is_active ? "Active" : "Inactive"}

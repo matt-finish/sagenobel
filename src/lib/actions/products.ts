@@ -12,7 +12,10 @@ export async function createProduct(formData: FormData) {
 
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
-  const priceCents = Math.round(parseFloat(formData.get("price") as string) * 100);
+  const productType = (formData.get("product_type") as string) || "custom";
+  const priceRaw = formData.get("price") as string;
+  const priceCents = priceRaw ? Math.round(parseFloat(priceRaw) * 100) : null;
+  const affiliateUrl = formData.get("affiliate_url") as string;
   const images = formData.get("images") as string;
   const customFields = formData.get("custom_fields") as string;
   const isActive = formData.get("is_active") === "true";
@@ -23,7 +26,9 @@ export async function createProduct(formData: FormData) {
     name,
     slug,
     description,
-    price_cents: priceCents,
+    product_type: productType,
+    price_cents: productType === "custom" ? priceCents : null,
+    affiliate_url: productType === "affiliate" ? affiliateUrl || null : null,
     images: images ? JSON.parse(images) : [],
     custom_fields: customFields ? JSON.parse(customFields) : [],
     is_active: isActive,
@@ -48,7 +53,10 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
-  const priceCents = Math.round(parseFloat(formData.get("price") as string) * 100);
+  const productType = (formData.get("product_type") as string) || "custom";
+  const priceRaw = formData.get("price") as string;
+  const priceCents = priceRaw ? Math.round(parseFloat(priceRaw) * 100) : null;
+  const affiliateUrl = formData.get("affiliate_url") as string;
   const images = formData.get("images") as string;
   const customFields = formData.get("custom_fields") as string;
   const isActive = formData.get("is_active") === "true";
@@ -61,7 +69,9 @@ export async function updateProduct(id: string, formData: FormData) {
       name,
       slug,
       description,
-      price_cents: priceCents,
+      product_type: productType,
+      price_cents: productType === "custom" ? priceCents : null,
+      affiliate_url: productType === "affiliate" ? affiliateUrl || null : null,
       images: images ? JSON.parse(images) : [],
       custom_fields: customFields ? JSON.parse(customFields) : [],
       is_active: isActive,

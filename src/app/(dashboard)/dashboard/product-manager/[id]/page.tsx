@@ -15,7 +15,7 @@ export default async function EditProductPage(
 
   const { data: product } = await supabase
     .from("products")
-    .select("id, name, description, price_cents, images, custom_fields, is_active")
+    .select("id, name, description, price_cents, images, custom_fields, is_active, product_type, affiliate_url")
     .eq("id", id)
     .single();
 

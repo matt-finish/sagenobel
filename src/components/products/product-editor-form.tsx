@@ -26,10 +26,12 @@ interface Product {
   id: string;
   name: string;
   description: string | null;
-  price_cents: number;
+  price_cents: number | null;
   images: (string | ImageWithFocus)[];
   custom_fields: CustomField[];
   is_active: boolean;
+  product_type: "custom" | "affiliate";
+  affiliate_url: string | null;
 }
 
 function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] {
@@ -39,6 +41,7 @@ function normalizeImages(images: (string | ImageWithFocus)[]): ImageWithFocus[] 
 }
 
 export function ProductEditorForm({ product }: { product?: Product }) {
+  const [productType, setProductType] = useState<"custom" | "affiliate">(product?.product_type || "custom");
   const [images, setImages] = useState<ImageWithFocus[]>(
     normalizeImages(product?.images || [])
   );
@@ -138,6 +141,7 @@ export function ProductEditorForm({ product }: { product?: Product }) {
 
     formData.set("images", JSON.stringify(images));
     formData.set("custom_fields", JSON.stringify(customFields));
+    formData.set("product_type", productType);
 
     const result = product
       ? await updateProduct(product.id, formData)
@@ -155,6 +159,27 @@ export function ProductEditorForm({ product }: { product?: Product }) {
         <div className="bg-error/10 text-error text-sm rounded-lg px-4 py-3">{error}</div>
       )}
 
+      {/* Product Type */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Product Type</label>
+        <div className="flex gap-4">
+          <label className={`flex-1 flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${productType === "custom" ? "border-sage/30 bg-sage/5" : "border-border"}`}>
+            <input type="radio" checked={productType === "custom"} onChange={() => setProductType("custom")} className="text-sage focus:ring-sage" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Custom Product</p>
+              <p className="text-xs text-foreground-muted">Sold through your store via Stripe checkout</p>
+            </div>
+          </label>
+          <label className={`flex-1 flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${productType === "affiliate" ? "border-accent/30 bg-accent/5" : "border-border"}`}>
+            <input type="radio" checked={productType === "affiliate"} onChange={() => setProductType("affiliate")} className="text-accent focus:ring-accent" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Affiliate Link</p>
+              <p className="text-xs text-foreground-muted">Links to Amazon or external store</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">Product Name</label>
@@ -162,18 +187,28 @@ export function ProductEditorForm({ product }: { product?: Product }) {
             className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
             placeholder="Product name" />
         </div>
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium text-foreground mb-1">
-            Base Price ($)
-            {customFields.some(f => f.type === "pricing_dropdown") && (
-              <span className="text-foreground-muted font-normal ml-1">(used when no size selected)</span>
-            )}
-          </label>
-          <input id="price" name="price" type="number" step="0.01" min="0" required
-            defaultValue={product ? (product.price_cents / 100).toFixed(2) : ""}
-            className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-            placeholder="0.00" />
-        </div>
+        {productType === "custom" ? (
+          <div>
+            <label htmlFor="price" className="block text-sm font-medium text-foreground mb-1">
+              Base Price ($)
+              {customFields.some(f => f.type === "pricing_dropdown") && (
+                <span className="text-foreground-muted font-normal ml-1">(used when no size selected)</span>
+              )}
+            </label>
+            <input id="price" name="price" type="number" step="0.01" min="0" required
+              defaultValue={product?.price_cents ? (product.price_cents / 100).toFixed(2) : ""}
+              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+              placeholder="0.00" />
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="affiliate_url" className="block text-sm font-medium text-foreground mb-1">Affiliate URL</label>
+            <input id="affiliate_url" name="affiliate_url" type="url" required
+              defaultValue={product?.affiliate_url || ""}
+              className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+              placeholder="https://www.amazon.com/..." />
+          </div>
+        )}
       </div>
 
       <div>

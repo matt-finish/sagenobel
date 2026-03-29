@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { FocusImage, type ImageWithFocus } from "@/components/shared/focus-image";
 import { PageSearch } from "@/components/shared/page-search";
@@ -20,7 +21,7 @@ export default async function ProductsPage(props: {
 
   let dbQuery = supabase
     .from("products")
-    .select("id, name, slug, price_cents, images, description")
+    .select("id, name, slug, price_cents, images, description, product_type, affiliate_url")
     .eq("is_active", true);
 
   if (query) {
@@ -55,23 +56,32 @@ export default async function ProductsPage(props: {
           {products.map((product) => {
             const rawImages = product.images as (string | ImageWithFocus)[];
             const firstImage = rawImages?.[0];
+            const isAffiliate = product.product_type === "affiliate";
+            const href = isAffiliate ? product.affiliate_url || "#" : `/products/${product.slug}`;
             return (
               <Link
                 key={product.id}
-                href={`/products/${product.slug}`}
+                href={href}
+                {...(isAffiliate ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="group"
               >
-                {firstImage ? (
-                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
-                    <FocusImage image={firstImage} alt={product.name} />
-                  </div>
-                ) : (
-                  <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
-                    <span className="font-serif text-foreground-muted/10 text-6xl italic">
-                      SN
+                <div className="relative">
+                  {firstImage ? (
+                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 image-hover">
+                      <FocusImage image={firstImage} alt={product.name} />
+                    </div>
+                  ) : (
+                    <div className="aspect-[3/4] rounded-xl bg-background-alt flex items-center justify-center mb-4 image-hover border border-border">
+                      <span className="font-serif text-foreground-muted/10 text-6xl italic">SN</span>
+                    </div>
+                  )}
+                  {isAffiliate && (
+                    <span className="absolute top-3 left-3 text-[10px] font-medium bg-white/90 backdrop-blur-sm text-foreground-muted px-2 py-1 rounded-full flex items-center gap-1">
+                      <ExternalLink size={10} />
+                      Amazon
                     </span>
-                  </div>
-                )}
+                  )}
+                </div>
                 <h2 className="font-medium text-foreground group-hover:text-sage transition-colors duration-300">
                   {product.name}
                 </h2>
@@ -81,7 +91,9 @@ export default async function ProductsPage(props: {
                   </p>
                 )}
                 <p className="text-sm text-foreground-muted mt-1">
-                  {formatPrice(product.price_cents)}
+                  {isAffiliate ? (
+                    <span className="text-sage flex items-center gap-1">Shop on Amazon <ExternalLink size={12} /></span>
+                  ) : product.price_cents ? formatPrice(product.price_cents) : "—"}
                 </p>
               </Link>
             );

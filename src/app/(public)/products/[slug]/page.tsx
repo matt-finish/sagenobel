@@ -73,19 +73,9 @@ export default async function ProductPage(
         {/* Images */}
         <div className="space-y-4">
           {images[0] ? (
-            product.product_type === "affiliate" ? (
-              <div className="relative aspect-square rounded-2xl overflow-hidden product-image-frame border border-border/40">
-                <div className="absolute inset-0 p-8 sm:p-12">
-                  <div className="relative w-full h-full">
-                    <FocusImage image={images[0]} alt={product.name} priority className="object-contain product-image-warm" />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="relative aspect-square rounded-2xl overflow-hidden">
-                <FocusImage image={images[0]} alt={product.name} priority />
-              </div>
-            )
+            <div className="relative aspect-square rounded-2xl overflow-hidden">
+              <FocusImage image={images[0]} alt={product.name} priority />
+            </div>
           ) : (
             <div className="aspect-square rounded-2xl bg-background-alt flex items-center justify-center">
               <span className="font-serif text-foreground-muted/10 text-7xl italic">

@@ -348,19 +348,9 @@ export default async function HomePage() {
               return (
                 <Link key={product.id} href={href} {...(isAffiliate ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="group">
                   {firstImage ? (
-                    isAffiliate ? (
-                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 product-card-hover product-image-frame border border-border/40">
-                        <div className="absolute inset-0 p-5 sm:p-6">
-                          <div className="relative w-full h-full">
-                            <FocusImage image={firstImage} alt={product.name} className="object-contain product-image-warm" />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
-                        <FocusImage image={firstImage} alt={product.name} />
-                      </div>
-                    )
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3 image-hover">
+                      <FocusImage image={firstImage} alt={product.name} />
+                    </div>
                   ) : (
                     <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-3 image-hover border border-border">
                       <span className="font-serif text-foreground-muted/10 text-5xl italic">SN</span>

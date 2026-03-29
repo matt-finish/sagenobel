@@ -26,19 +26,9 @@ function ProductCard({ product }: { product: { id: string; name: string; slug: s
     >
       <div className="relative">
         {firstImage ? (
-          isAffiliate ? (
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-2 product-card-hover product-image-frame border border-border/40">
-              <div className="absolute inset-0 p-4 sm:p-5">
-                <div className="relative w-full h-full">
-                  <FocusImage image={firstImage} alt={product.name} className="object-contain product-image-warm" />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-2 image-hover">
-              <FocusImage image={firstImage} alt={product.name} />
-            </div>
-          )
+          <div className="relative aspect-square rounded-xl overflow-hidden mb-2 image-hover">
+            <FocusImage image={firstImage} alt={product.name} />
+          </div>
         ) : (
           <div className="aspect-square rounded-xl bg-background-alt flex items-center justify-center mb-2 border border-border">
             <span className="font-serif text-foreground-muted/10 text-4xl italic">SN</span>

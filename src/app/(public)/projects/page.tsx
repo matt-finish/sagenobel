@@ -20,7 +20,7 @@ export default async function ProjectsPage(props: {
 
   let dbQuery = supabase
     .from("projects")
-    .select("id, title, slug, description, cover_image_url, tags")
+    .select("id, title, slug, description, cover_image_url, thumbnail_url, tags")
     .eq("is_published", true);
 
   if (query) {
@@ -33,7 +33,7 @@ export default async function ProjectsPage(props: {
   if (searchTerm) {
     const { data } = await supabase
       .from("projects")
-      .select("id, title, slug, description, cover_image_url, tags")
+      .select("id, title, slug, description, cover_image_url, thumbnail_url, tags")
       .eq("is_published", true)
       .contains("tags", [searchTerm]);
     tagResults = data || [];
@@ -74,9 +74,9 @@ export default async function ProjectsPage(props: {
           {projects.map(project => (
             <Link key={project.id} href={`/projects/${project.slug}`}
               className="group">
-              {project.cover_image_url ? (
+              {(project.thumbnail_url || project.cover_image_url) ? (
                 <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-5 image-hover">
-                  <Image src={project.cover_image_url} alt={project.title} fill className="object-cover" />
+                  <Image src={project.thumbnail_url || project.cover_image_url!} alt={project.title} fill className="object-cover" />
                 </div>
               ) : (
                 <div className="aspect-[4/3] rounded-xl bg-background-alt flex items-center justify-center mb-5 image-hover border border-border">

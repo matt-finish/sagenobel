@@ -10,6 +10,8 @@ export async function createProject(data: {
   description: string;
   cover_image_url: string | null;
   cover_image_focal: { focalX: number; focalY: number } | null;
+  thumbnail_url: string | null;
+  thumbnail_focal: { focalX: number; focalY: number } | null;
   gallery_images: { url: string; focalX?: number; focalY?: number }[];
   video_urls: string[];
   product_links: { label: string; url: string }[];
@@ -53,6 +55,8 @@ export async function updateProject(id: string, data: {
   description: string;
   cover_image_url: string | null;
   cover_image_focal: { focalX: number; focalY: number } | null;
+  thumbnail_url: string | null;
+  thumbnail_focal: { focalX: number; focalY: number } | null;
   gallery_images: { url: string; focalX?: number; focalY?: number }[];
   video_urls: string[];
   product_links: { label: string; url: string }[];

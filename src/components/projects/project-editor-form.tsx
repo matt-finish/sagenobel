@@ -35,6 +35,8 @@ interface Project {
   order_form_instructions: string | null;
   linked_product_ids: string[];
   files: FileItem[];
+  thumbnail_url: string | null;
+  thumbnail_focal: { focalX: number; focalY: number } | null;
   is_published: boolean;
   is_promoted: boolean;
   tags: string[];
@@ -60,6 +62,11 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
   const [coverImage, setCoverImage] = useState<ImageValue | null>(
     project?.cover_image_url
       ? { url: project.cover_image_url, focalX: project?.cover_image_focal?.focalX ?? 50, focalY: project?.cover_image_focal?.focalY ?? 50 }
+      : null
+  );
+  const [thumbnail, setThumbnail] = useState<ImageValue | null>(
+    project?.thumbnail_url
+      ? { url: project.thumbnail_url, focalX: project?.thumbnail_focal?.focalX ?? 50, focalY: project?.thumbnail_focal?.focalY ?? 50 }
       : null
   );
   const [galleryImages, setGalleryImages] = useState<ImageValue[]>(normalizeGallery(project?.gallery_images || []));
@@ -112,6 +119,8 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
       description: formData.get("description") as string,
       cover_image_url: coverImage?.url || null,
       cover_image_focal: coverImage ? { focalX: coverImage.focalX ?? 50, focalY: coverImage.focalY ?? 50 } : null,
+      thumbnail_url: thumbnail?.url || null,
+      thumbnail_focal: thumbnail ? { focalX: thumbnail.focalX ?? 50, focalY: thumbnail.focalY ?? 50 } : null,
       gallery_images: galleryImages,
       video_urls: videoUrls,
       product_links: productLinks,
@@ -169,7 +178,10 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
             className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-foreground placeholder:text-foreground-muted/50 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage resize-none"
             placeholder="Project description..." />
         </div>
-        <ImageUpload bucket="site-assets" value={coverImage} onChange={setCoverImage} label="Cover Image" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ImageUpload bucket="site-assets" value={thumbnail} onChange={setThumbnail} label="Thumbnail Image (gallery card)" />
+          <ImageUpload bucket="site-assets" value={coverImage} onChange={setCoverImage} label="Banner Image (project page header)" />
+        </div>
       </section>
 
       {/* Section Visibility */}

@@ -46,7 +46,7 @@ export default async function HomePage() {
   const { data: promotedProjects } = sections.projects
     ? await supabase
         .from("projects")
-        .select("id, title, slug, description, cover_image_url")
+        .select("id, title, slug, description, cover_image_url, thumbnail_url")
         .eq("is_published", true)
         .eq("is_promoted", true)
         .order("created_at", { ascending: false })
@@ -106,9 +106,9 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 gap-3 animate-fade-in delay-200">
               <div className="space-y-3">
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {promotedProjects?.[0]?.cover_image_url ? (
+                  {(promotedProjects?.[0]?.thumbnail_url || promotedProjects?.[0]?.cover_image_url) ? (
                     <Link href={`/projects/${promotedProjects[0].slug}`}>
-                      <Image src={promotedProjects[0].cover_image_url} alt={promotedProjects[0].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                      <Image src={promotedProjects[0].thumbnail_url || promotedProjects[0].cover_image_url!} alt={promotedProjects[0].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
                     </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -122,9 +122,9 @@ export default async function HomePage() {
               </div>
               <div className="space-y-3 pt-6">
                 <div className="aspect-square rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {promotedProjects?.[1]?.cover_image_url ? (
+                  {(promotedProjects?.[1]?.thumbnail_url || promotedProjects?.[1]?.cover_image_url) ? (
                     <Link href={`/projects/${promotedProjects[1].slug}`}>
-                      <Image src={promotedProjects[1].cover_image_url} alt={promotedProjects[1].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                      <Image src={promotedProjects[1].thumbnail_url || promotedProjects[1].cover_image_url!} alt={promotedProjects[1].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
                     </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -133,9 +133,9 @@ export default async function HomePage() {
                   )}
                 </div>
                 <div className="aspect-[3/4] rounded-xl bg-background-alt border border-border/50 overflow-hidden">
-                  {promotedProjects?.[2]?.cover_image_url ? (
+                  {(promotedProjects?.[2]?.thumbnail_url || promotedProjects?.[2]?.cover_image_url) ? (
                     <Link href={`/projects/${promotedProjects[2].slug}`}>
-                      <Image src={promotedProjects[2].cover_image_url} alt={promotedProjects[2].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
+                      <Image src={promotedProjects[2].thumbnail_url || promotedProjects[2].cover_image_url!} alt={promotedProjects[2].title} fill className="object-cover !relative hover:scale-105 transition-transform duration-500" />
                     </Link>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -294,10 +294,10 @@ export default async function HomePage() {
                 href={`/projects/${project.slug}`}
                 className="group"
               >
-                {project.cover_image_url ? (
+                {(project.thumbnail_url || project.cover_image_url) ? (
                   <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-5 image-hover">
                     <Image
-                      src={project.cover_image_url}
+                      src={project.thumbnail_url || project.cover_image_url!}
                       alt={project.title}
                       fill
                       className="object-cover"

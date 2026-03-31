@@ -40,6 +40,7 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
   const videoUrls = project.video_urls as string[];
   const productLinks = project.product_links as { label: string; url: string }[];
   const guideIds = project.guide_ids as string[];
+  const projectFiles = (project.files || []) as { url: string; name: string }[];
   const orderFormFields = project.order_form_fields as { id: string; label: string; type: string; required: boolean; options: string[] }[];
   const linkedProductIds = (project.linked_product_ids || []) as string[];
 
@@ -119,6 +120,27 @@ export default async function ProjectPage(props: PageProps<"/projects/[slug]">) 
                 <Download size={18} className="text-sage flex-shrink-0" />
                 <span className="text-sm font-medium text-foreground">{guide.title}</span>
               </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Downloadable Files */}
+      {projectFiles.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-semibold text-foreground mb-4">Downloads</h2>
+          <div className="space-y-2">
+            {projectFiles.map((file, i) => (
+              <a
+                key={i}
+                href={file.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg bg-sage/5 border border-sage/10 px-4 py-3 text-sage font-medium hover:bg-sage/10 transition-colors"
+              >
+                <Download size={16} className="flex-shrink-0" />
+                <span className="text-sm truncate">{file.name}</span>
+              </a>
             ))}
           </div>
         </section>

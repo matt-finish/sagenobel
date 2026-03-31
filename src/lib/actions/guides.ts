@@ -17,6 +17,8 @@ export async function createGuide(formData: FormData) {
   const coverImageFocal = coverImageFocalRaw ? JSON.parse(coverImageFocalRaw) : null;
   const guideType = formData.get("guide_type") as string;
   const fileUrl = formData.get("file_url") as string;
+  const filesRaw = formData.get("files") as string;
+  const files = filesRaw ? JSON.parse(filesRaw) : [];
   const content = formData.get("content") as string;
   const tags = formData.get("tags") as string;
   const isPublished = formData.get("is_published") === "true";
@@ -31,6 +33,7 @@ export async function createGuide(formData: FormData) {
     cover_image_focal: coverImageFocal,
     guide_type: guideType,
     file_url: guideType === "download" ? fileUrl || null : null,
+    files: guideType === "download" ? files : [],
     content: guideType === "article" && content ? JSON.parse(content) : null,
     tags: tags ? JSON.parse(tags) : [],
     is_published: isPublished,
@@ -59,6 +62,8 @@ export async function updateGuide(id: string, formData: FormData) {
   const coverImageFocal = coverImageFocalRaw ? JSON.parse(coverImageFocalRaw) : null;
   const guideType = formData.get("guide_type") as string;
   const fileUrl = formData.get("file_url") as string;
+  const filesRaw = formData.get("files") as string;
+  const files = filesRaw ? JSON.parse(filesRaw) : [];
   const content = formData.get("content") as string;
   const tags = formData.get("tags") as string;
   const isPublished = formData.get("is_published") === "true";
@@ -75,6 +80,7 @@ export async function updateGuide(id: string, formData: FormData) {
     cover_image_focal: coverImageFocal,
       guide_type: guideType,
       file_url: guideType === "download" ? fileUrl || null : null,
+    files: guideType === "download" ? files : [],
       content: guideType === "article" && content ? JSON.parse(content) : null,
       tags: tags ? JSON.parse(tags) : [],
       is_published: isPublished,

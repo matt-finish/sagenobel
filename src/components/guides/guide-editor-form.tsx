@@ -4,13 +4,18 @@ import { useState } from "react";
 import { createGuide, updateGuide } from "@/lib/actions/guides";
 import { TiptapEditor } from "@/components/blog/tiptap-editor";
 import { ImageUpload } from "@/components/shared/image-upload";
-import { FileUpload } from "@/components/shared/file-upload";
+import { MultiFileUpload } from "@/components/shared/multi-file-upload";
 import { TagsInput } from "@/components/shared/tags-input";
 
 interface ImageValue {
   url: string;
   focalX?: number;
   focalY?: number;
+}
+
+interface FileItem {
+  url: string;
+  name: string;
 }
 
 interface Guide {
@@ -21,6 +26,7 @@ interface Guide {
   cover_image_focal: { focalX: number; focalY: number } | null;
   guide_type: string;
   file_url: string | null;
+  files: FileItem[];
   content: unknown;
   is_published: boolean;
   tags: string[];
@@ -33,7 +39,12 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
       ? { url: guide.cover_image_url, focalX: guide?.cover_image_focal?.focalX ?? 50, focalY: guide?.cover_image_focal?.focalY ?? 50 }
       : null
   );
-  const [fileUrl, setFileUrl] = useState<string | null>(guide?.file_url || null);
+  // Support legacy single file_url + new multi-file
+  const [files, setFiles] = useState<FileItem[]>(() => {
+    if (guide?.files && guide.files.length > 0) return guide.files;
+    if (guide?.file_url) return [{ url: guide.file_url, name: guide.file_url.split("/").pop() || "file" }];
+    return [];
+  });
   const [content, setContent] = useState(
     guide?.content ? JSON.stringify(guide.content) : ""
   );
@@ -48,7 +59,8 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
     formData.set("guide_type", guideType);
     formData.set("cover_image_url", coverImage?.url || "");
     formData.set("cover_image_focal", coverImage ? JSON.stringify({ focalX: coverImage.focalX, focalY: coverImage.focalY }) : "");
-    formData.set("file_url", fileUrl || "");
+    formData.set("file_url", files[0]?.url || "");
+    formData.set("files", JSON.stringify(files));
     formData.set("tags", JSON.stringify(tags));
     if (guideType === "article") {
       formData.set("content", content);
@@ -91,7 +103,7 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={guideType === "download"} onChange={() => setGuideType("download")} className="text-sage focus:ring-sage" />
-            <span className="text-sm text-foreground">Downloadable File</span>
+            <span className="text-sm text-foreground">Downloadable Files</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={guideType === "article"} onChange={() => setGuideType("article")} className="text-sage focus:ring-sage" />
@@ -101,8 +113,13 @@ export function GuideEditorForm({ guide }: { guide?: Guide }) {
       </div>
 
       {guideType === "download" && (
-        <FileUpload bucket="guide-files" value={fileUrl} onChange={setFileUrl} label="Downloadable File"
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg" />
+        <MultiFileUpload
+          bucket="guide-files"
+          value={files}
+          onChange={setFiles}
+          label="Downloadable Files"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+        />
       )}
 
       {guideType === "article" && (

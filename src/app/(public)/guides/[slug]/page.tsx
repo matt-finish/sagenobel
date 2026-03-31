@@ -82,19 +82,44 @@ export default async function GuidePage(
         )}
       </header>
 
-      {guide.guide_type === "download" && guide.file_url && (
-        <div className="bg-sage/5 border border-sage/20 rounded-xl p-6 mb-8 text-center">
-          <a
-            href={guide.file_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-sage px-6 py-3 text-white font-medium hover:bg-sage-dark transition-colors"
-          >
-            <Download size={18} />
-            Download Guide
-          </a>
-        </div>
-      )}
+      {guide.guide_type === "download" && (() => {
+        const files = (guide.files as { url: string; name: string }[]) || [];
+        const hasFiles = files.length > 0;
+        const hasLegacy = !hasFiles && guide.file_url;
+        if (!hasFiles && !hasLegacy) return null;
+        return (
+          <div className="bg-sage/5 border border-sage/20 rounded-xl p-6 mb-8">
+            {hasFiles ? (
+              <div className="space-y-2">
+                {files.map((file, i) => (
+                  <a
+                    key={i}
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-lg bg-sage/10 px-4 py-3 text-sage font-medium hover:bg-sage/20 transition-colors"
+                  >
+                    <Download size={16} className="flex-shrink-0" />
+                    <span className="text-sm truncate">{file.name}</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center">
+                <a
+                  href={guide.file_url!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-sage px-6 py-3 text-white font-medium hover:bg-sage-dark transition-colors"
+                >
+                  <Download size={18} />
+                  Download Guide
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {guide.guide_type === "article" && guide.content && (
         <div className="border-t border-border pt-8">

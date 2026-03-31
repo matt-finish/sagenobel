@@ -8,8 +8,10 @@ import { Plus, Trash2, Upload, Loader2, GripVertical, Crosshair } from "lucide-r
 import Image from "next/image";
 import { FocalPointPicker } from "@/components/shared/focal-point-picker";
 import { TagsInput } from "@/components/shared/tags-input";
+import { MultiFileUpload } from "@/components/shared/multi-file-upload";
 
 interface ImageValue { url: string; focalX?: number; focalY?: number }
+interface FileItem { url: string; name: string }
 interface ProductLink { label: string; url: string }
 interface FormField { id: string; label: string; type: string; required: boolean; options: string[] }
 
@@ -32,6 +34,7 @@ interface Project {
   order_form_fields: FormField[];
   order_form_instructions: string | null;
   linked_product_ids: string[];
+  files: FileItem[];
   is_published: boolean;
   is_promoted: boolean;
   tags: string[];
@@ -65,6 +68,7 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
   const [productLinks, setProductLinks] = useState<ProductLink[]>(project?.product_links || []);
   const [selectedGuides, setSelectedGuides] = useState<string[]>(project?.guide_ids || []);
   const [linkedProductIds, setLinkedProductIds] = useState<string[]>(project?.linked_product_ids || []);
+  const [projectFiles, setProjectFiles] = useState<FileItem[]>(project?.files || []);
   const [orderFormFields, setOrderFormFields] = useState<FormField[]>(project?.order_form_fields || []);
 
   const [showGallery, setShowGallery] = useState(project?.show_gallery ?? true);
@@ -113,6 +117,7 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
       product_links: productLinks,
       guide_ids: selectedGuides,
       linked_product_ids: linkedProductIds,
+      files: projectFiles,
       show_gallery: showGallery,
       show_videos: showVideos,
       show_guides: showGuides,
@@ -290,6 +295,19 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
             className="inline-flex items-center gap-1 text-xs text-sage hover:text-sage-dark font-medium"><Plus size={14} />Add Link</button>
         </section>
       )}
+
+      {/* Downloadable Files */}
+      <section className="space-y-3">
+        <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Downloadable Files</h3>
+        <p className="text-xs text-foreground-muted">Upload PDFs, templates, or other files visitors can download from this project page.</p>
+        <MultiFileUpload
+          bucket="guide-files"
+          value={projectFiles}
+          onChange={setProjectFiles}
+          label="Project Files"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+        />
+      </section>
 
       {/* Linked Site Products */}
       <section className="space-y-3">

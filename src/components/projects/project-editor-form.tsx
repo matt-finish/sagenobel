@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { createProject, updateProject } from "@/lib/actions/projects";
 import { ImageUpload } from "@/components/shared/image-upload";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Upload, Loader2, GripVertical, Crosshair } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2, GripVertical, Crosshair, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { FocalPointPicker } from "@/components/shared/focal-point-picker";
 import { TagsInput } from "@/components/shared/tags-input";
@@ -209,12 +209,24 @@ export function ProjectEditorForm({ project, guides, siteProducts }: { project?:
                   <Image src={img.url} alt={`Gallery ${i + 1}`} fill className="object-cover"
                     style={{ objectPosition: `${img.focalX}% ${img.focalY}%` }} />
                   <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {i > 0 && (
+                      <button type="button" onClick={() => { const u = [...galleryImages]; [u[i - 1], u[i]] = [u[i], u[i - 1]]; setGalleryImages(u); }}
+                        className="p-1 bg-black/60 rounded-full text-white" title="Move left">
+                        <ArrowLeft size={12} />
+                      </button>
+                    )}
+                    {i < galleryImages.length - 1 && (
+                      <button type="button" onClick={() => { const u = [...galleryImages]; [u[i], u[i + 1]] = [u[i + 1], u[i]]; setGalleryImages(u); }}
+                        className="p-1 bg-black/60 rounded-full text-white" title="Move right">
+                        <ArrowRight size={12} />
+                      </button>
+                    )}
                     <button type="button" onClick={() => setEditingGalleryFocal(editingGalleryFocal === i ? null : i)}
                       className="p-1 bg-black/60 rounded-full text-white" title="Set focal point">
                       <Crosshair size={12} />
                     </button>
                     <button type="button" onClick={() => { setGalleryImages(galleryImages.filter((_, j) => j !== i)); if (editingGalleryFocal === i) setEditingGalleryFocal(null); }}
-                      className="p-1 bg-black/60 rounded-full text-white">
+                      className="p-1 bg-black/60 rounded-full text-white" title="Delete">
                       <Trash2 size={12} />
                     </button>
                   </div>

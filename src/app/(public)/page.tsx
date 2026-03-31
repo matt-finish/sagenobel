@@ -49,6 +49,7 @@ export default async function HomePage() {
         .select("id, title, slug, description, cover_image_url, thumbnail_url")
         .eq("is_published", true)
         .eq("is_promoted", true)
+        .order("sort_order")
         .order("created_at", { ascending: false })
         .limit(3)
     : { data: null };

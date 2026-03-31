@@ -4,6 +4,7 @@ import { TiptapRenderer } from "@/components/blog/tiptap-renderer";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
+import { GuideFileList } from "@/components/guides/file-preview";
 import type { Metadata } from "next";
 import type { JSONContent } from "@tiptap/react";
 import { requireSection } from "@/lib/check-section";
@@ -87,36 +88,12 @@ export default async function GuidePage(
         const hasFiles = files.length > 0;
         const hasLegacy = !hasFiles && guide.file_url;
         if (!hasFiles && !hasLegacy) return null;
+        const allFiles = hasFiles
+          ? files
+          : [{ url: guide.file_url!, name: guide.file_url!.split("/").pop() || "Guide" }];
         return (
           <div className="bg-sage/5 border border-sage/20 rounded-xl p-6 mb-8">
-            {hasFiles ? (
-              <div className="space-y-2">
-                {files.map((file, i) => (
-                  <a
-                    key={i}
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-lg bg-sage/10 px-4 py-3 text-sage font-medium hover:bg-sage/20 transition-colors"
-                  >
-                    <Download size={16} className="flex-shrink-0" />
-                    <span className="text-sm truncate">{file.name}</span>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center">
-                <a
-                  href={guide.file_url!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg bg-sage px-6 py-3 text-white font-medium hover:bg-sage-dark transition-colors"
-                >
-                  <Download size={18} />
-                  Download Guide
-                </a>
-              </div>
-            )}
+            <GuideFileList files={allFiles} />
           </div>
         );
       })()}
